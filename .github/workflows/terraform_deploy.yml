@@ -10,22 +10,13 @@ env:
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   TERRAFORM_VERSION: 1.9.6
   AWS_REGION: us-east-1
+  GITHUB_ACTIONS_ROLE_NAME: GithubActionsRole
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-
-  fmt:
-    name: Terraform Format 
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v4
-
-      - name: Terraform Format 
-        run: terraform fmt
 
   terraform-init:
     name: Terraform Init
@@ -38,7 +29,7 @@ jobs:
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/GithubActionsRole  
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.GITHUB_ACTIONS_ROLE_NAME }} 
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
@@ -48,3 +39,45 @@ jobs:
       
       - name: Terraform Init
         run: terraform init
+
+      - name: Cache Terraform modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform       
+          key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
+          restore-keys: |
+            ${{ runner.os }}-terraform-
+
+  fmt:
+    name: Terraform Format 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Terraform Format 
+        run: terraform fmt
+
+  plane:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Cache Terraform modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform       
+          key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
+          restore-keys: |
+            ${{ runner.os }}-terraform- 
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.GITHUB_ACTIONS_ROLE_NAME }}  
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Terraform Plan
+        run: terraform plan -input=false
