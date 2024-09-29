@@ -42,7 +42,9 @@ jobs:
       - name: Cache Terraform modules
         uses: actions/cache@v4
         with:
-          path: ~/.terraform       
+          path: |
+            ~/.terraform
+            .terraform.lock.hcl        
           key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
           restore-keys: |
             ${{ runner.os }}-terraform-
@@ -68,10 +70,12 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v4
 
-      - name: Cache Terraform modules
+      - name: Restore Terraform cache
         uses: actions/cache@v4
         with:
-          path: ~/.terraform       
+          path: |
+            ~/.terraform
+            .terraform.lock.hcl     
           key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
           restore-keys: |
             ${{ runner.os }}-terraform- 
