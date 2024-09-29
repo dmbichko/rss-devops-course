@@ -19,7 +19,7 @@ variable "DynamoDBAccessPolicyName" {
 }
 
 variable "aws_account_id" {
-  type    = string
+  type = string
 }
 
 variable "terraform_github_actions_IODC_provider_name" {
