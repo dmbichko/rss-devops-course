@@ -1,9 +1,10 @@
 name: Terraform Deployment
 
 on:
+  pull_request:
   push:
     branches:
-      - dev
+      - task_1
 
 
 permissions:
