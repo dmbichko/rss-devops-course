@@ -34,7 +34,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: ${{ env.TERRAFORM_VERSION }} # Specify the version of Terraform
+          terraform_version: ${{ env.TERRAFORM_VERSION }} 
       
       - name: Terraform Init
         run: terraform init
@@ -85,6 +85,10 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.GITHUB_ACTIONS_ROLE_NAME }}  
           aws-region: ${{ env.AWS_REGION }}
-      
+
+      - name: Terraform init
+        run: terraform init
+          
+
       - name: Terraform Plan
         run: terraform plan -input=false
