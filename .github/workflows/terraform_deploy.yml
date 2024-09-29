@@ -91,4 +91,4 @@ jobs:
           
 
       - name: Terraform Plan
-        run: terraform plan -input=false -var="aws_account_id=${{ env.AWS_ACCOUNT_ID }}
+        run: terraform plan -input=false -var="aws_account_id=${{ env.AWS_ACCOUNT_ID }}"
