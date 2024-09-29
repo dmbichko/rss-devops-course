@@ -1,7 +1,6 @@
 name: Terraform Deployment
 
 on:
-  pull_request:
   push:
     branches:
       - dev
