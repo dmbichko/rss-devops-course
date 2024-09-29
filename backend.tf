@@ -8,7 +8,10 @@
 /*# Backend must remain commented until the Bucket
  and the DynamoDB table are created. 
  After the creation you can uncomment it,
- run "terraform init" and then "terraform apply" */
+ run "terraform init" and then "terraform apply" 
+ If you decide use local backend after creation s3 bucket
+ and dynamodb  you should use this command 
+ terraform init -migrate-state*/
 
 terraform {
   backend "s3" {
