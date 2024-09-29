@@ -12,17 +12,18 @@ permissions:
   contents: read
 
 jobs:
-  name: Terraform Init
-  runs-on: ubuntu-latest
+  terraform-init:
+    name: Terraform Init
+    runs-on: ubuntu-latest
 
-  steps:
-    - name: Checkout the code
-      uses: actions/checkout@v4
-
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.9.6 # Specify the version of Terraform
-
-    - name: Terraform Init
-      run: terraform init
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+  
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.6 # Specify the version of Terraform
+  
+      - name: Terraform Init
+        run: terraform init
