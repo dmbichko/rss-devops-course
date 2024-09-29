@@ -1,4 +1,4 @@
-Terraform Infrastructure Setup for GitHub Actions
+Terraform Infrastructure Setup for GitHub Actions.
 This repository contains Terraform code to provision AWS infrastructure for managing Terraform state and deploying resources via GitHub Actions. The key components include:
 
 S3 Bucket and DynamoDB: For storing Terraform state files.
