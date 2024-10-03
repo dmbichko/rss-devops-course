@@ -23,7 +23,6 @@ Run the GitHub Actions workflow to automatically apply the Terraform configurati
     ├── locals.tf
     ├── OIDCProvider.tf
     ├── providers.tf
-    ├── readme-ai.md
     ├── README.md
     ├── s3.tf
     ├── screenshots
