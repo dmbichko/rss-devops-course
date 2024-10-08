@@ -22,11 +22,11 @@ resource "aws_key_pair" "EC2-instance_key" {
   #public_key = ec2_public_key
 }
 
-resource "aws_instance" "ec2-k8s" {
+resource "aws_instance" "ec2-k8s-public" {
   count         = length(aws_subnet.public_subnets[*].id)
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.ec2-instance-type
-  key_name      = aws_key_pair.instance_key.EC2-instance_key
+  key_name      = aws_key_pair.EC2-instance_key.key_name
 
   subnet_id = element(aws_subnet.public_subnets[*].id, count.index)
 
@@ -35,13 +35,30 @@ resource "aws_instance" "ec2-k8s" {
 
   tags = merge(
     local.common_tags,
-    tomap({ "Name" = "${local.prefix}-EC2-K8s-${count.index + 1}" })
+    tomap({ "Name" = "${local.prefix}-ec2-k8s-public-${count.index + 1}" })
   )
 }
 
-output "EC2_instance_details" {
+resource "aws_instance" "ec2-k8s-private" {
+  count         = length(aws_subnet.private_subnets[*].id)
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.ec2-instance-type
+  key_name      = aws_key_pair.EC2-instance_key.key_name
+
+  subnet_id = element(aws_subnet.private_subnets[*].id, count.index)
+
+  # Security group configuration allowing SSH access
+  security_groups = ["${aws_security_group.allow_all_privata_sub.id}"]
+
+  tags = merge(
+    local.common_tags,
+    tomap({ "Name" = "${local.prefix}-ec2-k8s-private-${count.index + 1}" })
+  )
+}
+
+output "EC2_public_instance_details" {
   value = [
-    for instance in aws_instance.ec2-k8s : {
+    for instance in aws_instance.ec2-k8s-public : {
       instance_id = instance.id
       public_ip   = instance.public_ip
       private_ip  = instance.private_ip
@@ -50,7 +67,14 @@ output "EC2_instance_details" {
   ]
 }
 
-output "EC2_instance_public_ip" {
-  value = aws_instance.ec2-k8s[*].public_ip
+output "EC2_private_instance_details" {
+  value = [
+    for instance in aws_instance.ec2-k8s-public : {
+      instance_id = instance.id
+      public_ip   = instance.public_ip
+      private_ip  = instance.private_ip
+      subnet_id   = instance.subnet_id
+    }
+  ]
 }
 
