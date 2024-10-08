@@ -7,7 +7,7 @@ variable "region" {
 
 # VPC variables defined as below
 # VPC Name
-variable "name" {
+variable "vpc_name" {
   description = "VPC Name"
   type        = string
   default     = "vpc-K8s"

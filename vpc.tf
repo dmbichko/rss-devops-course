@@ -4,7 +4,7 @@ resource "aws_vpc" "vpc-K8s" {
   cidr_block = var.cidr
   tags = merge(
     local.common_tags,
-    tomap({ "Name" = "${local.prefix}-VPC-K8s" })
+    tomap({ "Name" = "${local.prefix}-${var.vpc_name}" })
   )
 }
 
