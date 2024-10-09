@@ -31,8 +31,9 @@ resource "aws_instance" "ec2-k8s-public" {
   subnet_id = element(aws_subnet.public_subnets[*].id, count.index)
 
   # Security group configuration allowing SSH access
-  security_groups = ["${aws_security_group.allow_ssh.id}"]
-
+  vpc_security_group_ids = [
+    aws_security_group.allow_all_privata_sub.id
+  ]
   tags = merge(
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-ec2-k8s-public-${count.index + 1}" })
@@ -47,13 +48,37 @@ resource "aws_instance" "ec2-k8s-private" {
 
   subnet_id = element(aws_subnet.private_subnets[*].id, count.index)
 
-  # Security group configuration allowing SSH access
-  security_groups = ["${aws_security_group.allow_all_privata_sub.id}"]
+  # Security group configuration allowing SSH access and icmp
+  vpc_security_group_ids = [
+    aws_security_group.private_instances.id
+  ]
 
   tags = merge(
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-ec2-k8s-private-${count.index + 1}" })
   )
+}
+
+resource "aws_instance" "ec2-k8s-bastion" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.ec2-instance-type
+  key_name      = aws_key_pair.EC2-instance_key.key_name
+
+  subnet_id = aws_subnet.public_subnets[0].id
+
+  # Security group configuration allowing SSH access
+  vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
+
+  tags = merge(
+    local.common_tags,
+    tomap({ "Name" = "${local.prefix}-ec2-k8s-bastion" })
+  )
+}
+
+# Elastic IP for Bastion
+resource "aws_eip" "bastion" {
+  instance = aws_instance.ec2-k8s-bastion.id
+  domain   = "vpc"
 }
 
 output "EC2_public_instance_details" {

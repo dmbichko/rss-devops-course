@@ -36,9 +36,6 @@ resource "aws_route_table" "public_subnets" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw-vpc-K8s.id
   }
-  route {
-    cidr_block = aws_
-  }
   tags = merge(
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-VPC-K8s-route-public-subnets" })
@@ -88,10 +85,11 @@ resource "aws_subnet" "private_subnets" {
 
 
 resource "aws_route_table" "private_subnets_rt" {
+  count  = length(var.private_subnets)
   vpc_id = aws_vpc.vpc-K8s.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.nat.id
+    gateway_id = aws_nat_gateway.nat[count.index].id
   }
   tags = merge(
     local.common_tags,
@@ -101,6 +99,6 @@ resource "aws_route_table" "private_subnets_rt" {
 
 resource "aws_route_table_association" "private_routers" {
   count          = length(aws_subnet.private_subnets[*].id)
-  route_table_id = aws_route_table.private_subnets_rt.id
-  subnet_id      = element(aws_subnet.private_subnets_rt[*].id, count.index)
+  route_table_id = aws_route_table.private_subnets_rt[count.index].id
+  subnet_id      = element(aws_subnet.private_subnets[*].id, count.index)
 }

@@ -1,29 +1,14 @@
-resource "aws_security_group" "allow_ssh" {
-  name        = "allow-ssh"
-  description = "Allow SSH inbound traffic and all outbound traffic"
-
-  vpc_id = aws_vpc.vpc-K8s.id
+resource "aws_security_group" "bastion" {
+  name        = "bastion-sg"
+  description = "Security group for bastion host"
+  vpc_id      = aws_vpc.vpc-K8s.id
 
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] # Restrict this to your IP in production
   }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1" # Indicates all protocols
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_security_group" "allow_icmp" {
-  name        = "allow-icmp"
-  description = "Allow icmp inbound traffic and all outbound traffic"
-
-  vpc_id = aws_vpc.vpc-K8s.id
-
   ingress {
     from_port   = -1
     to_port     = -1
@@ -35,10 +20,38 @@ resource "aws_security_group" "allow_icmp" {
   egress {
     from_port   = 0
     to_port     = 0
-    protocol    = "-1" # Indicates all protocols
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+resource "aws_security_group" "private_instances" {
+  name        = "private-instances-sg"
+  description = "Security group for private instances"
+  vpc_id      = aws_vpc.vpc-K8s.id
+
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion.id]
+  }
+  ingress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow ICMP from anywhere"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 
 resource "aws_security_group" "allow_all_privata_sub" {
   name        = "allow-all"
