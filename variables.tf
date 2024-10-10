@@ -3,6 +3,12 @@ variable "region" {
   default = "us-east-1"
 }
 
+ 
+variable "your_ip" {
+  type = string
+  description = "Your IP address"
+}
+
 variable "terraform-state-s3-bucket" {
   type    = string
   default = "rss-devops-course-dmbichko-terraform-state"
