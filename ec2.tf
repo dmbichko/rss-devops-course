@@ -24,7 +24,7 @@ resource "aws_key_pair" "EC2-instance_key" {
 
 # Create a private key for bastion host
 resource "aws_key_pair" "bastion_key" {
-  key_name   = "K8s-EC2-ssh-key"
+  key_name   = "K8s-Bastion-ssh-key"
   public_key = file("${path.module}/bastion-ssh-key.pub")
   # store pub key in github secter
   #public_key = bastion-ssh-key
