@@ -1,7 +1,7 @@
 resource "aws_security_group" "bastion" {
   name        = "bastion-sg"
   description = "Security group for bastion host"
-  vpc_id      = aws_vpc.vpc-K8s.id
+  vpc_id      = aws_vpc.vpc-k8s.id
 
   ingress {
     from_port   = 22
@@ -25,10 +25,10 @@ resource "aws_security_group" "bastion" {
   }
 }
 
-resource "aws_security_group" "private_instances" {
+resource "aws_security_group" "public_instances" {
   name        = "private-instances-sg"
   description = "Security group for private instances"
-  vpc_id      = aws_vpc.vpc-K8s.id
+  vpc_id      = aws_vpc.vpc-k8s.id
 
   ingress {
     from_port       = 22
@@ -57,7 +57,7 @@ resource "aws_security_group" "allow_all_privata_sub" {
   name        = "allow-all"
   description = "Allow all inbound traffic from VPC and all outbound traffic"
 
-  vpc_id = aws_vpc.vpc-K8s.id
+  vpc_id = aws_vpc.vpc-k8s.id
 
   ingress {
     from_port   = 0

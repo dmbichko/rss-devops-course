@@ -1,6 +1,6 @@
 resource "aws_network_acl" "web_server_acl" {
-  vpc_id = aws_vpc.vpc-K8s.id
-  
+  vpc_id = aws_vpc.vpc-k8s.id
+
   # Inbound Rules
   ingress {
     rule_no    = 100
@@ -24,10 +24,21 @@ resource "aws_network_acl" "web_server_acl" {
     rule_no    = 120
     protocol   = "tcp"
     action     = "allow"
-    cidr_block = ["${var.your_ip}"]  # Replace with your specific IP range
+    cidr_block = var.your_ip # Replace with your specific IP range
     from_port  = 22
     to_port    = 22
   }
+  ingress {
+    rule_no    = 130
+    protocol   = "icmp"
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+    icmp_type  = -1
+    icmp_code  = -1
+  }
+
 
   # Outbound Rules
   egress {
@@ -57,6 +68,18 @@ resource "aws_network_acl" "web_server_acl" {
     to_port    = 65535
   }
 
+  egress {
+    rule_no    = 130
+    protocol   = "icmp"
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+    icmp_type  = -1
+    icmp_code  = -1
+  }
+
+
   tags = merge(
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-test-ACLs-for-lab" })
@@ -65,7 +88,7 @@ resource "aws_network_acl" "web_server_acl" {
 
 # Associate the ACL with your subnets
 resource "aws_network_acl_association" "web_server_acl_association" {
-  count                   = length(var.public_subnets)
+  count          = length(var.public_subnets)
   network_acl_id = aws_network_acl.web_server_acl.id
-  subnet_id     = element(aws_subnet.public_subnets[*].id, count.index)  
+  subnet_id      = element(aws_subnet.public_subnets[*].id, count.index)
 }

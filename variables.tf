@@ -3,9 +3,9 @@ variable "region" {
   default = "us-east-1"
 }
 
- 
+
 variable "your_ip" {
-  type = string
+  type        = string
   description = "Your IP address"
 }
 

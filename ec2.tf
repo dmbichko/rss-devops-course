@@ -17,10 +17,20 @@ data "aws_ami" "ubuntu" {
 # Create a private key for aws instances
 resource "aws_key_pair" "EC2-instance_key" {
   key_name   = "K8s-EC2-ssh-key"
-  public_key = file("${path.module}/ec2-rss-school.pub")
+  public_key = file("${path.module}/ec2-ssh-key.pub")
   # store pub key in github secter
-  #public_key = ec2_public_key
+  #public_key = ec2-ssh-key
 }
+
+# Create a private key for bastion host
+resource "aws_key_pair" "bastion_key" {
+  key_name   = "K8s-EC2-ssh-key"
+  public_key = file("${path.module}/bastion-ssh-key.pub")
+  # store pub key in github secter
+  #public_key = bastion-ssh-key
+}
+
+
 
 resource "aws_instance" "ec2-k8s-public" {
   count         = length(aws_subnet.public_subnets[*].id)
@@ -32,7 +42,7 @@ resource "aws_instance" "ec2-k8s-public" {
 
   # Security group configuration allowing SSH access
   vpc_security_group_ids = [
-    aws_security_group.allow_all_privata_sub.id
+    aws_security_group.public_instances.id
   ]
   tags = merge(
     local.common_tags,
@@ -50,7 +60,7 @@ resource "aws_instance" "ec2-k8s-private" {
 
   # Security group configuration allowing SSH access and icmp
   vpc_security_group_ids = [
-    aws_security_group.private_instances.id
+    aws_security_group.allow_all_privata_sub.id
   ]
 
   tags = merge(
@@ -62,7 +72,7 @@ resource "aws_instance" "ec2-k8s-private" {
 resource "aws_instance" "ec2-k8s-bastion" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.ec2-instance-type
-  key_name      = aws_key_pair.EC2-instance_key.key_name
+  key_name      = aws_key_pair.bastion_key.key_name
 
   subnet_id = aws_subnet.public_subnets[0].id
 
@@ -98,7 +108,7 @@ output "bastion_public_ip" {
 
 output "EC2_private_instance_details" {
   value = [
-    for instance in aws_instance.ec2-k8s-public : {
+    for instance in aws_instance.ec2-k8s-private : {
       instance_id = instance.id
       public_ip   = instance.public_ip
       private_ip  = instance.private_ip

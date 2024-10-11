@@ -3,9 +3,9 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-resource "aws_vpc" "vpc-K8s" {
-  cidr_block = var.cidr
-    enable_dns_hostnames = true
+resource "aws_vpc" "vpc-k8s" {
+  cidr_block           = var.cidr
+  enable_dns_hostnames = true
   enable_dns_support   = true
   tags = merge(
     local.common_tags,
@@ -14,30 +14,30 @@ resource "aws_vpc" "vpc-K8s" {
 }
 
 # Internet Gateway
-resource "aws_internet_gateway" "igw-vpc-K8s" {
-  vpc_id = aws_vpc.vpc-K8s.id
+resource "aws_internet_gateway" "igw_vpc_k8s" {
+  vpc_id = aws_vpc.vpc-k8s.id
   tags = merge(
     local.common_tags,
-    tomap({ "Name" = "${local.prefix}-IGW-VPC-K8s" })
+    tomap({ "Name" = "${local.prefix}-IGW-vpc-k8s" })
   )
 }
 
 #-------------Public Subnets and Routing----------------------------------------
 resource "aws_subnet" "public_subnets" {
   count                   = length(var.public_subnets)
-  vpc_id                  = aws_vpc.vpc-K8s.id
+  vpc_id                  = aws_vpc.vpc-k8s.id
   cidr_block              = var.public_subnets[count.index]
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = true
   tags = merge(
     local.common_tags,
-    tomap({ "Name" = "${local.prefix}-VPC-K8s-public-${count.index + 1}" })
+    tomap({ "Name" = "${local.prefix}-vpc-k8s-public-${count.index + 1}" })
   )
 }
 
 # Public Route Table
 resource "aws_route_table" "public_rt" {
-  vpc_id = aws_vpc.vpc_K8s.id
+  vpc_id = aws_vpc.vpc-k8s.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -46,7 +46,7 @@ resource "aws_route_table" "public_rt" {
 
   tags = merge(
     local.common_tags,
-    { Name = "${local.prefix}-VPC-K8s-route-public-subnets" }
+    { Name = "${local.prefix}-vpc-k8s-route-public-subnets" }
   )
 }
 
@@ -76,33 +76,33 @@ resource "aws_nat_gateway" "nat" {
     { Name = "${local.prefix}-NAT-K8s-${count.index + 1}" }
   )
 
-    depends_on = [aws_internet_gateway.igw_vpc_k8s]
+  depends_on = [aws_internet_gateway.igw_vpc_k8s]
 }
 
 
 #-------------Private Subnets and Routing----------------------------------------
 resource "aws_subnet" "private_subnets" {
   count             = length(var.private_subnets)
-  vpc_id            = aws_vpc.vpc-K8s.id
+  vpc_id            = aws_vpc.vpc-k8s.id
   cidr_block        = var.private_subnets[count.index]
   availability_zone = data.aws_availability_zones.available.names[count.index]
   tags = merge(
     local.common_tags,
-    tomap({ "Name" = "${local.prefix}-VPC-K8s-private-${count.index + 1}" })
+    tomap({ "Name" = "${local.prefix}-vpc-k8s-private-${count.index + 1}" })
   )
 }
 
 # Private Route Tables
 resource "aws_route_table" "private_rt" {
   count  = length(var.private_subnets)
-  vpc_id = aws_vpc.vpc-K8s.id
+  vpc_id = aws_vpc.vpc-k8s.id
   route {
-    cidr_block = "0.0.0.0/0"
-    nat_gateway_id  = aws_nat_gateway.nat[count.index].id
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat[count.index].id
   }
   tags = merge(
     local.common_tags,
-    tomap({ "Name" = "${local.prefix}-VPC-K8s-route-private-subnets" })
+    tomap({ "Name" = "${local.prefix}-vpc-k8s-route-private-subnets" })
   )
 }
 
@@ -117,7 +117,7 @@ resource "aws_route_table_association" "private_routers" {
 # Outputs
 output "vpc_id" {
   description = "The ID of the VPC"
-  value       = aws_vpc.vpc_k8s.id
+  value       = aws_vpc.vpc-k8s.id
 }
 
 output "public_subnet_ids" {
