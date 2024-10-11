@@ -1,4 +1,5 @@
 resource "aws_iam_role" "GithubActionsRole" {
+
   name = var.terraform_github_actions_role_name
 
   assume_role_policy = jsonencode({
@@ -23,6 +24,9 @@ resource "aws_iam_role" "GithubActionsRole" {
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-GithubActionsRole" })
   )
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "dynamodb_policy_attachment" {

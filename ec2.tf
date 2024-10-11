@@ -16,18 +16,18 @@ data "aws_ami" "ubuntu" {
 
 # Create a private key for aws instances
 resource "aws_key_pair" "EC2-instance_key" {
-  key_name   = "K8s-EC2-ssh-key"
-  public_key = file("${path.module}/ec2-ssh-key.pub")
+  key_name = "K8s-EC2-ssh-key"
+  # public_key = file("${path.module}/ec2-ssh-key.pub")
   # store pub key in github secter
-  #public_key = ec2-ssh-key
+  public_key = ec2-ssh-key
 }
 
 # Create a private key for bastion host
 resource "aws_key_pair" "bastion_key" {
-  key_name   = "K8s-Bastion-ssh-key"
-  public_key = file("${path.module}/bastion-ssh-key.pub")
+  key_name = "K8s-Bastion-ssh-key"
+  # public_key = file("${path.module}/bastion-ssh-key.pub")
   # store pub key in github secter
-  #public_key = bastion-ssh-key
+  public_key = bastion-ssh-key
 }
 
 
@@ -83,37 +83,5 @@ resource "aws_instance" "ec2-k8s-bastion" {
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-ec2-k8s-bastion" })
   )
-}
-
-# Elastic IP for Bastion
-resource "aws_eip" "bastion" {
-  instance = aws_instance.ec2-k8s-bastion.id
-  domain   = "vpc"
-}
-
-output "EC2_public_instance_details" {
-  value = [
-    for instance in aws_instance.ec2-k8s-public : {
-      instance_id = instance.id
-      public_ip   = instance.public_ip
-      private_ip  = instance.private_ip
-      subnet_id   = instance.subnet_id
-    }
-  ]
-}
-
-output "bastion_public_ip" {
-  value = aws_eip.bastion.public_ip
-}
-
-output "EC2_private_instance_details" {
-  value = [
-    for instance in aws_instance.ec2-k8s-private : {
-      instance_id = instance.id
-      public_ip   = instance.public_ip
-      private_ip  = instance.private_ip
-      subnet_id   = instance.subnet_id
-    }
-  ]
 }
 

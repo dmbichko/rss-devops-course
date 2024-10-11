@@ -24,10 +24,11 @@ resource "aws_network_acl" "web_server_acl" {
     rule_no    = 120
     protocol   = "tcp"
     action     = "allow"
-    cidr_block = var.your_ip # Replace with your specific IP range
+    cidr_block = "0.0.0.0/0" # Changed this to allow SSH from anywhere
     from_port  = 22
     to_port    = 22
   }
+
   ingress {
     rule_no    = 130
     protocol   = "icmp"
@@ -39,28 +40,8 @@ resource "aws_network_acl" "web_server_acl" {
     icmp_code  = -1
   }
 
-
-  # Outbound Rules
-  egress {
-    rule_no    = 100
-    protocol   = "tcp"
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 80
-    to_port    = 80
-  }
-
-  egress {
-    rule_no    = 110
-    protocol   = "tcp"
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 443
-    to_port    = 443
-  }
-
-  egress {
-    rule_no    = 120
+  ingress {
+    rule_no    = 140
     protocol   = "tcp"
     action     = "allow"
     cidr_block = "0.0.0.0/0"
@@ -68,17 +49,15 @@ resource "aws_network_acl" "web_server_acl" {
     to_port    = 65535
   }
 
+  # Outbound Rules
   egress {
-    rule_no    = 130
-    protocol   = "icmp"
+    rule_no    = 100
+    protocol   = "-1" # Allow all protocols
     action     = "allow"
     cidr_block = "0.0.0.0/0"
     from_port  = 0
     to_port    = 0
-    icmp_type  = -1
-    icmp_code  = -1
   }
-
 
   tags = merge(
     local.common_tags,

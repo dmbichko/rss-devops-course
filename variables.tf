@@ -3,10 +3,31 @@ variable "region" {
   default = "us-east-1"
 }
 
+/*variable "ec2_public_key" {
+  description = "Name of the SSH key pair"
+  default     = "K8s-ec2-key"
+  type        = string
+}*/
+
+variable "bastion-ssh-key" {
+  description = "Public key for bastion host"
+  type        = string
+}
+variable "ec2-ssh-key" {
+  description = "Public key for other instances"
+  type        = string
+}
+
+variable "ec2-instance-type" {
+  description = "EC2 instance type"
+  default     = "t3.micro"
+  type        = string
+}
 
 variable "your_ip" {
   type        = string
   description = "Your IP address"
+  default     = "0.0.0.0/0"
 }
 
 variable "terraform-state-s3-bucket" {
