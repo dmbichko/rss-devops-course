@@ -4,10 +4,13 @@ on:
   pull_request:
   push:
     branches:
-      - task_1
+      - dev
+      - task_2
 
 env:
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+  BASTION_SSH_KEY: ${{ secrets.BASTION_SSH_KEY }}
   TERRAFORM_VERSION: 1.9.6
   AWS_REGION: us-east-1
   GITHUB_ACTIONS_ROLE_NAME: GithubActionsRole
@@ -59,7 +62,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Terraform Format 
-        run: terraform fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: false
 
   terraform-plane:
     name: Terraform Plan
@@ -87,7 +91,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Plan
-        run: terraform plan -input=false -var="aws_account_id=${{ env.AWS_ACCOUNT_ID }}"
+        run: terraform plan -input=false -var="aws_account_id=${{ env.AWS_ACCOUNT_ID }}" -var="bastion-ssh-key=${{ env.BASTION_SSH_KEY }}" -var="ec2-ssh-key=${{ env.EC2_SSH_KEY }}"
 
   terraform-apply:
           name: Terraform Apply
@@ -115,4 +119,5 @@ jobs:
                 aws-region: ${{ env.AWS_REGION }}
       
             - name: Terraform Apply
-              run: terraform apply -auto-approve -var="aws_account_id=${{ env.AWS_ACCOUNT_ID }}"
+              run: terraform apply -auto-approve -var="aws_account_id=${{ env.AWS_ACCOUNT_ID }}" -var="bastion-ssh-key=${{ env.BASTION_SSH_KEY }}" -var="ec2-ssh-key=${{ env.EC2_SSH_KEY }}"
+

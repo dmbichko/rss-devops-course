@@ -1,0 +1,128 @@
+aws_vpc.vpc-k8s: Creating...
+aws_vpc.vpc-k8s: Still creating... [10s elapsed]
+aws_vpc.vpc-k8s: Creation complete after 12s [id=vpc-0b0f816431c6a984b]
+aws_internet_gateway.igw_vpc_k8s: Creating...
+aws_subnet.private_subnets[0]: Creating...
+aws_subnet.public_subnets[0]: Creating...
+aws_subnet.private_subnets[1]: Creating...
+aws_subnet.public_subnets[1]: Creating...
+aws_security_group.allow_all_privata_sub: Creating...
+aws_security_group.bastion: Creating...
+aws_network_acl.web_server_acl: Creating...
+aws_internet_gateway.igw_vpc_k8s: Creation complete after 0s [id=igw-08436f12092d01a6b]
+aws_route_table.public_rt: Creating...
+aws_subnet.private_subnets[0]: Creation complete after 1s [id=subnet-0aa091a18c1644f22]
+aws_subnet.private_subnets[1]: Creation complete after 1s [id=subnet-0876e395718f858cb]
+aws_nat_gateway.nat[1]: Creating...
+aws_nat_gateway.nat[0]: Creating...
+aws_network_acl.web_server_acl: Creation complete after 1s [id=acl-0b6277bc4b2f45d52]
+aws_route_table.public_rt: Creation complete after 1s [id=rtb-0d95a15d5cccabe10]
+aws_security_group.allow_all_privata_sub: Creation complete after 3s [id=sg-086add108a2861dd6]
+aws_security_group.bastion: Creation complete after 3s [id=sg-02cf59b9b3241fe9e]
+aws_instance.ec2-k8s-private[0]: Creating...
+aws_instance.ec2-k8s-private[1]: Creating...
+aws_security_group.public_instances: Creating...
+aws_security_group.public_instances: Creation complete after 2s [id=sg-03cdf442c5d5d171d]
+aws_subnet.public_subnets[1]: Still creating... [10s elapsed]
+aws_subnet.public_subnets[0]: Still creating... [10s elapsed]
+aws_nat_gateway.nat[0]: Still creating... [10s elapsed]
+aws_nat_gateway.nat[1]: Still creating... [10s elapsed]
+aws_subnet.public_subnets[0]: Creation complete after 11s [id=subnet-0d3a65eb4df8e63de]
+aws_instance.ec2-k8s-bastion: Creating...
+aws_subnet.public_subnets[1]: Creation complete after 11s [id=subnet-0533d465ac3ae103a]
+aws_network_acl_association.web_server_acl_association[1]: Creating...
+aws_route_table_association.public_routes[1]: Creating...
+aws_network_acl_association.web_server_acl_association[0]: Creating...
+aws_instance.ec2-k8s-public[1]: Creating...
+aws_instance.ec2-k8s-public[0]: Creating...
+aws_network_acl_association.web_server_acl_association[0]: Creation complete after 0s [id=aclassoc-0659687f4476a3d04]
+aws_route_table_association.public_routes[0]: Creating...
+aws_network_acl_association.web_server_acl_association[1]: Creation complete after 0s [id=aclassoc-0745f71e62b316600]
+aws_route_table_association.public_routes[1]: Creation complete after 0s [id=rtbassoc-0dec61008023a690a]
+aws_route_table_association.public_routes[0]: Creation complete after 1s [id=rtbassoc-08c2af7e986be1c12]
+aws_instance.ec2-k8s-private[0]: Still creating... [10s elapsed]
+aws_instance.ec2-k8s-private[1]: Still creating... [10s elapsed]
+aws_instance.ec2-k8s-private[1]: Creation complete after 12s [id=i-0d9113876e1ca32c5]
+aws_instance.ec2-k8s-private[0]: Creation complete after 12s [id=i-00dad009397a69f50]
+aws_nat_gateway.nat[0]: Still creating... [20s elapsed]
+aws_nat_gateway.nat[1]: Still creating... [20s elapsed]
+aws_instance.ec2-k8s-bastion: Still creating... [10s elapsed]
+aws_instance.ec2-k8s-public[0]: Still creating... [10s elapsed]
+aws_instance.ec2-k8s-public[1]: Still creating... [10s elapsed]
+aws_instance.ec2-k8s-bastion: Creation complete after 13s [id=i-0223a0b6605b01eb6]
+aws_instance.ec2-k8s-public[1]: Creation complete after 13s [id=i-053d58cd5ac561669]
+aws_instance.ec2-k8s-public[0]: Creation complete after 13s [id=i-0b35713ee23c74dd2]
+aws_eip.bastion: Modifying... [id=eipalloc-05dfc2e0d871f364a]
+aws_eip.bastion: Modifications complete after 1s [id=eipalloc-05dfc2e0d871f364a]
+aws_nat_gateway.nat[0]: Still creating... [30s elapsed]
+aws_nat_gateway.nat[1]: Still creating... [30s elapsed]
+aws_nat_gateway.nat[0]: Still creating... [40s elapsed]
+aws_nat_gateway.nat[1]: Still creating... [40s elapsed]
+aws_nat_gateway.nat[1]: Still creating... [50s elapsed]
+aws_nat_gateway.nat[0]: Still creating... [50s elapsed]
+aws_nat_gateway.nat[0]: Still creating... [1m0s elapsed]
+aws_nat_gateway.nat[1]: Still creating... [1m0s elapsed]
+aws_nat_gateway.nat[1]: Still creating... [1m10s elapsed]
+aws_nat_gateway.nat[0]: Still creating... [1m10s elapsed]
+aws_nat_gateway.nat[1]: Still creating... [1m20s elapsed]
+aws_nat_gateway.nat[0]: Still creating... [1m20s elapsed]
+aws_nat_gateway.nat[1]: Still creating... [1m30s elapsed]
+aws_nat_gateway.nat[0]: Still creating... [1m30s elapsed]
+aws_nat_gateway.nat[1]: Still creating... [1m40s elapsed]
+aws_nat_gateway.nat[0]: Still creating... [1m40s elapsed]
+aws_nat_gateway.nat[0]: Still creating... [1m50s elapsed]
+aws_nat_gateway.nat[1]: Still creating... [1m50s elapsed]
+aws_nat_gateway.nat[1]: Creation complete after 1m54s [id=nat-0294de3ec846aedb0]
+aws_nat_gateway.nat[0]: Still creating... [2m0s elapsed]
+aws_nat_gateway.nat[0]: Creation complete after 2m4s [id=nat-0ffd8f3764debcb9e]
+aws_route_table.private_rt[0]: Creating...
+aws_route_table.private_rt[1]: Creating...
+aws_route_table.private_rt[0]: Creation complete after 1s [id=rtb-005f170e61a009379]
+aws_route_table.private_rt[1]: Creation complete after 1s [id=rtb-03c4dd15e8d5bec39]
+aws_route_table_association.private_routers[1]: Creating...
+aws_route_table_association.private_routers[0]: Creating...
+aws_route_table_association.private_routers[0]: Creation complete after 1s [id=rtbassoc-0ca88e6637774a361]
+aws_route_table_association.private_routers[1]: Creation complete after 1s [id=rtbassoc-0b3442bd0381dd403]
+
+Apply complete! Resources: 26 added, 1 changed, 0 destroyed.
+
+Outputs:
+
+EC2_private_instance_details = [
+  {
+    "instance_id" = "i-00dad009397a69f50"
+    "private_ip" = "10.0.1.106"
+    "public_ip" = ""
+    "subnet_id" = "subnet-0aa091a18c1644f22"
+  },
+  {
+    "instance_id" = "i-0d9113876e1ca32c5"
+    "private_ip" = "10.0.2.33"
+    "public_ip" = ""
+    "subnet_id" = "subnet-0876e395718f858cb"
+  },
+]
+EC2_public_instance_details = [
+  {
+    "instance_id" = "i-0b35713ee23c74dd2"
+    "private_ip" = "10.0.101.17"
+    "public_ip" = "44.200.5.56"
+    "subnet_id" = "subnet-0d3a65eb4df8e63de"
+  },
+  {
+    "instance_id" = "i-053d58cd5ac561669"
+    "private_ip" = "10.0.102.155"
+    "public_ip" = "52.91.18.73"
+    "subnet_id" = "subnet-0533d465ac3ae103a"
+  },
+]
+bastion_public_ip = "3.217.163.147"
+private_subnet_ids = [
+  "subnet-0aa091a18c1644f22",
+  "subnet-0876e395718f858cb",
+]
+public_subnet_ids = [
+  "subnet-0d3a65eb4df8e63de",
+  "subnet-0533d465ac3ae103a",
+]
+vpc_id = "vpc-0b0f816431c6a984b"
