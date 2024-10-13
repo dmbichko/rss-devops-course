@@ -98,4 +98,3 @@ terraform apply -var="aws_account_id=YOUR_ACCOUNT_ID" -var="bastion-ssh-key=YOUR
 
 # Destroy infrastructure (use with caution!)
 terraform destroy -var="aws_account_id=YOUR_ACCOUNT_ID" -var="bastion-ssh-key=YOUR_BASTION_KEY" -var="ec2-ssh-key=YOUR_EC2_KEY"
-
