@@ -9,6 +9,12 @@ variable "region" {
   type        = string
 }*/
 
+variable "k3s_token" {
+  description = "K3S token"
+  type        = string
+  sensitive   = true
+}
+
 variable "bastion-ssh-key" {
   description = "Public key for bastion host"
   type        = string
