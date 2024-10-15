@@ -14,13 +14,13 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-data "aws_ami" "nat_instance" {
+data "aws_ami" "amazon_linux_2" {
   most_recent = true
   owners      = ["amazon"]
 
   filter {
     name   = "name"
-    values = ["amzn-ami-vpc-nat-*"]
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 
   filter {
@@ -28,6 +28,7 @@ data "aws_ami" "nat_instance" {
     values = ["hvm"]
   }
 }
+
 
 /*resource "time_sleep" "wait_for_k3s_server" {
   depends_on = [aws_instance.k3s_server]
@@ -54,7 +55,7 @@ resource "aws_key_pair" "bastion_key" {
 
 resource "aws_instance" "nat" {
   count                       = length(aws_subnet.public_subnets[*].id)
-  ami                         = data.aws_ami.nat_instance.id
+  ami                         = data.aws_ami.amazon_linux_2.id
   instance_type               = var.ec2-instance-type
   key_name                    = aws_key_pair.EC2-instance_key.key_name
   associate_public_ip_address = true
