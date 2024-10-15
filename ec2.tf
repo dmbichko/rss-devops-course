@@ -166,7 +166,7 @@ resource "aws_instance" "k3s_server" {
 
   user_data = <<-EOF
               #!/bin/bash
-              curl -sfL https://get.k3s.io | sh - K3S_TOKEN=${var.k3s_token}
+              curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - --token ${var.k3s_token}
               EOF
 
   tags = merge(
