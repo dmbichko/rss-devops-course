@@ -92,6 +92,7 @@ resource "aws_instance" "ec2-k8s-public" {
 }
 
 resource "aws_instance" "ec2-k8s-private" {
+  depends_on    = [aws_instance.k3s_server]
   count         = length(aws_subnet.private_subnets[*].id)
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.ec2-instance-type
