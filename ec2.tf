@@ -14,6 +14,21 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+data "aws_ami" "nat_instance" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn-ami-vpc-nat-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 /*resource "time_sleep" "wait_for_k3s_server" {
   depends_on = [aws_instance.k3s_server]
 
@@ -38,11 +53,12 @@ resource "aws_key_pair" "bastion_key" {
 }
 
 resource "aws_instance" "nat" {
-  count         = length(aws_subnet.public_subnets[*].id)
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = var.ec2-instance-type
-  key_name      = aws_key_pair.EC2-instance_key.key_name
-  #source_dest_check = false
+  count                       = length(aws_subnet.public_subnets[*].id)
+  ami                         = data.aws_ami.nat_instance.id
+  instance_type               = var.ec2-instance-type
+  key_name                    = aws_key_pair.EC2-instance_key.key_name
+  associate_public_ip_address = true
+  source_dest_check           = false
   #subnet_id         = element(aws_subnet.public_subnets[*].id, count.index)
 
   network_interface {
@@ -56,22 +72,16 @@ resource "aws_instance" "nat" {
     aws_security_group.nat_sg.id
   ]*/
   user_data = <<-EOF
-                sudo apt-get update
-                sudo apt-get install iptables-services -y
-                sudo systemctl enable iptables
-                sudo systemctl start iptables
-
-                # Turning on IP Forwarding
-                sudo touch /etc/sysctl.d/custom-ip-forwarding.conf
-                sudo chmod 666 /etc/sysctl.d/custom-ip-forwarding.conf
-                sudo echo "net.ipv4.ip_forward=1" >> /etc/sysctl.d/custom-ip-forwarding.conf
-                sudo sysctl -p /etc/sysctl.d/custom-ip-forwarding.conf
-
-                # Making a catchall rule for routing and masking the private IP
-                sudo /sbin/iptables -t nat -A POSTROUTING -o ens5 -j MASQUERADE
-                sudo /sbin/iptables -F FORWARD
-                sudo service iptables save
-                sudo service iptables restart
+              #!/bin/bash
+              yum update -y
+              yum install -y iptables-services
+              echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.conf
+              sysctl -p
+              iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+              service iptables save
+              systemctl enable iptables
+              systemctl start iptables
+              reboot
               EOF
   tags = merge(
     local.common_tags,
