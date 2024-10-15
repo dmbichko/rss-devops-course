@@ -95,7 +95,7 @@ resource "aws_subnet" "private_subnets" {
 resource "aws_route_table" "private_rt" {
   count  = length(var.private_subnets)
   vpc_id = aws_vpc.vpc-k8s.id
-/*  route {
+  /*  route {
     cidr_block  = "0.0.0.0/0"
     network_interface_id = element(aws_network_interface.nat[*].id, count.index)
     nat_gateway_id = aws_nat_gateway.nat[count.index].id
