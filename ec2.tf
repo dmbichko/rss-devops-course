@@ -14,11 +14,11 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-resource "time_sleep" "wait_for_k3s_server" {
+/*resource "time_sleep" "wait_for_k3s_server" {
   depends_on = [aws_instance.k3s_server]
 
   create_duration = "120s"
-}
+}*/
 
 
 # Create a private key for aws instances
@@ -99,7 +99,7 @@ resource "aws_instance" "ec2-k8s-public" {
 }
 
 resource "aws_instance" "ec2-k8s-private" {
-  depends_on    = [time_sleep.wait_for_k3s_server]
+  #depends_on    = [time_sleep.wait_for_k3s_server]
   count         = length(aws_subnet.private_subnets[*].id)
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.ec2-instance-type
@@ -114,6 +114,10 @@ resource "aws_instance" "ec2-k8s-private" {
 
   user_data = <<-EOF
               #!/bin/bash
+              until nc -z ${aws_instance.k3s_server.private_ip} 6443; do
+                echo "Waiting for K3s server to be ready..."
+                sleep 5
+              done
               curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent --server https://${aws_instance.k3s_server.private_ip}:6443 --token ${var.k3s_token}" sh -s -
               EOF
 
