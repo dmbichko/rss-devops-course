@@ -38,10 +38,16 @@ resource "aws_instance" "nat" {
   source_dest_check = false
   subnet_id         = element(aws_subnet.public_subnets[*].id, count.index)
 
+  network_interface {
+    network_interface_id = aws_network_interface.nat_eni[count.index].id
+    device_index         = 0
+  }
+
+
   # Security group configuration allowing SSH access
-  vpc_security_group_ids = [
+  /*vpc_security_group_ids = [
     aws_security_group.nat_sg.id
-  ]
+  ]*/
   user_data = <<-EOF
                 sudo apt-get update
                 sudo apt-get install iptables-services -y

@@ -67,6 +67,19 @@ resource "aws_eip" "nat-eip" {
   )
 }
 
+resource "aws_network_interface" "nat_eni" {
+  count             = length(var.public_subnets)
+  subnet_id         = aws_subnet.public_subnets[count.index].id
+  security_groups   = [aws_security_group.nat_sg.id]
+  source_dest_check = false
+
+  tags = merge(
+    local.common_tags,
+    { Name = "${local.prefix}-NAT-ENI-${count.index + 1}" }
+  )
+}
+
+
 /*resource "aws_nat_gateway" "nat" {
   count         = length(var.private_subnets)
   allocation_id = aws_eip.nat-eip[count.index].id
