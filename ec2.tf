@@ -14,6 +14,13 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+resource "time_sleep" "wait_for_k3s_server" {
+  depends_on = [aws_instance.k3s_server]
+
+  create_duration = "120s"
+}
+
+
 # Create a private key for aws instances
 resource "aws_key_pair" "EC2-instance_key" {
   key_name = "K8s-EC2-ssh-key"
@@ -92,7 +99,7 @@ resource "aws_instance" "ec2-k8s-public" {
 }
 
 resource "aws_instance" "ec2-k8s-private" {
-  depends_on    = [aws_instance.k3s_server]
+  depends_on    = [time_sleep.wait_for_k3s_server]
   count         = length(aws_subnet.private_subnets[*].id)
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.ec2-instance-type
