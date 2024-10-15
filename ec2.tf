@@ -31,11 +31,11 @@ resource "aws_key_pair" "bastion_key" {
 }
 
 resource "aws_instance" "nat" {
-  count             = length(aws_subnet.public_subnets[*].id)
-  ami               = data.aws_ami.ubuntu.id
-  instance_type     = var.ec2-instance-type
-  key_name          = aws_key_pair.EC2-instance_key.key_name
-  source_dest_check = false
+  count         = length(aws_subnet.public_subnets[*].id)
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.ec2-instance-type
+  key_name      = aws_key_pair.EC2-instance_key.key_name
+  #source_dest_check = false
   #subnet_id         = element(aws_subnet.public_subnets[*].id, count.index)
 
   network_interface {
