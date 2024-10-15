@@ -104,6 +104,8 @@ resource "aws_subnet" "private_subnets" {
   )
 }
 
+
+
 # Private Route Tables
 resource "aws_route_table" "private_rt" {
   count  = length(var.private_subnets)
@@ -123,7 +125,7 @@ resource "aws_route" "private_nat_route" {
   count                  = length(var.private_subnets)
   route_table_id         = aws_route_table.private_rt[count.index].id
   destination_cidr_block = "0.0.0.0/0"
-  network_interface_id   = aws_instance.nat[count.index].id
+  network_interface_id   = aws_network_interface.nat_eni[count.index].id
 }
 
 # Private Route Table Association
