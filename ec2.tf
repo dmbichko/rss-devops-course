@@ -104,9 +104,14 @@ resource "aws_instance" "ec2-k8s-private" {
     aws_security_group.allow_all_privata_sub.id
   ]
 
+  user_data = <<-EOF
+              #!/bin/bash
+              curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent --server https://${aws_instance.k3s_server.private_ip}:6443 --token ${var.k3s_token}" sh -s -
+              EOF
+
   tags = merge(
     local.common_tags,
-    tomap({ "Name" = "${local.prefix}-ec2-k8s-private-${count.index + 1}" })
+    tomap({ "Name" = "${local.prefix}-ec2-k3s-agent-private-${count.index + 1}" })
   )
 }
 
@@ -125,4 +130,29 @@ resource "aws_instance" "ec2-k8s-bastion" {
     tomap({ "Name" = "${local.prefix}-ec2-k8s-bastion" })
   )
 }
+
+resource "aws_instance" "k3s_server" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.ec2-instance-type
+  key_name      = aws_key_pair.EC2-instance_key.key_name
+  subnet_id     = aws_subnet.public_subnets[0].id
+
+  #install k3s server
+  vpc_security_group_ids = [
+    aws_security_group.allow_all_privata_sub.id
+  ]
+  #!!!!!!!!!!!!!!!!! You should add special SG
+
+  user_data = <<-EOF
+              #!/bin/bash
+              curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - --flannel-backend none --token ${var.k3s_token}
+              EOF
+
+  tags = merge(
+    local.common_tags,
+    tomap({ "Name" = "${local.prefix}-k3s-server" })
+  )
+}
+
+
 
