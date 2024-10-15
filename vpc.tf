@@ -67,7 +67,7 @@ resource "aws_eip" "nat-eip" {
   )
 }
 
-resource "aws_nat_gateway" "nat" {
+/*resource "aws_nat_gateway" "nat" {
   count         = length(var.private_subnets)
   allocation_id = aws_eip.nat-eip[count.index].id
   subnet_id     = element(aws_subnet.private_subnets[*].id, count.index)
@@ -77,8 +77,7 @@ resource "aws_nat_gateway" "nat" {
   )
 
   depends_on = [aws_internet_gateway.igw_vpc_k8s]
-}
-
+}*/
 
 #-------------Private Subnets and Routing----------------------------------------
 resource "aws_subnet" "private_subnets" {
@@ -97,8 +96,10 @@ resource "aws_route_table" "private_rt" {
   count  = length(var.private_subnets)
   vpc_id = aws_vpc.vpc-k8s.id
   route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat[count.index].id
+    cidr_block  = "0.0.0.0/0"
+    instance_id = element(aws_instance.nat[*].id, count.index)
+    #network_interface_id = element(aws_network_interface.nat[*].id, count.index)
+    #nat_gateway_id = aws_nat_gateway.nat[count.index].id
   }
   tags = merge(
     local.common_tags,

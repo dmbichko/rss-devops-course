@@ -30,6 +30,42 @@ resource "aws_key_pair" "bastion_key" {
   public_key = var.bastion-ssh-key
 }
 
+resource "aws_instance" "nat" {
+  count                       = length(aws_subnet.public_subnets[*].id)
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = var.ec2-instance-type
+  key_name                    = aws_key_pair.EC2-instance_key.key_name
+  associate_public_ip_address = true
+  source_dest_check           = false
+  subnet_id                   = element(aws_subnet.public_subnets[*].id, count.index)
+
+  # Security group configuration allowing SSH access
+  vpc_security_group_ids = [
+    aws_security_group.nat_sg.id
+  ]
+  user_data = <<-EOF
+                sudo apt-get update
+                sudo apt-get install iptables-services -y
+                sudo systemctl enable iptables
+                sudo systemctl start iptables
+
+                # Turning on IP Forwarding
+                sudo touch /etc/sysctl.d/custom-ip-forwarding.conf
+                sudo chmod 666 /etc/sysctl.d/custom-ip-forwarding.conf
+                sudo echo "net.ipv4.ip_forward=1" >> /etc/sysctl.d/custom-ip-forwarding.conf
+                sudo sysctl -p /etc/sysctl.d/custom-ip-forwarding.conf
+
+                # Making a catchall rule for routing and masking the private IP
+                sudo /sbin/iptables -t nat -A POSTROUTING -o ens5 -j MASQUERADE
+                sudo /sbin/iptables -F FORWARD
+                sudo service iptables save
+                sudo service iptables restart
+              EOF
+  tags = merge(
+    local.common_tags,
+    tomap({ "Name" = "${local.prefix}-ec2-k8s-nat-${count.index + 1}" })
+  )
+}
 
 
 resource "aws_instance" "ec2-k8s-public" {
