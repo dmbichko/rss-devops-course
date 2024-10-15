@@ -105,12 +105,14 @@ resource "aws_route_table" "private_rt" {
     tomap({ "Name" = "${local.prefix}-vpc-k8s-route-private-subnets" })
   )
 }
+
 resource "aws_route" "private_nat_route" {
   count                  = length(var.private_subnets)
   route_table_id         = aws_route_table.private_rt[count.index].id
   destination_cidr_block = "0.0.0.0/0"
-  instance_id            = element(aws_instance.nat[*].id, count.index)
+  instance_id            = aws_instance.nat[count.index].id
 }
+
 # Private Route Table Association
 resource "aws_route_table_association" "private_routers" {
   count          = length(aws_subnet.private_subnets[*].id)
