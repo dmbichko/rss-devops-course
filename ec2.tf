@@ -169,9 +169,9 @@ resource "aws_instance" "k3s_server" {
 
   user_data = <<-EOF
               #!/bin/bash
-              #curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - --token ${var.k3s_token}
+              curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - --token ${var.k3s_token}
               #--cluster-cidr 172.16.0.0/16 --service-cidr 172.17.0.0/16
-              curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - --token ${var.k3s_token} --cluster-cidr ${var.cidr}
+              #curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - --token ${var.k3s_token} --cluster-cidr ${var.cidr}
               EOF
 
   tags = merge(
