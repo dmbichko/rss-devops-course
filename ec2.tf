@@ -140,7 +140,7 @@ resource "aws_instance" "ec2-k8s-private" {
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-ec2-k3s-agent-${count.index + 1}" })
   )
-  depends_on    = [aws_instance.k3s_server]
+  depends_on = [aws_instance.k3s_server]
 }
 
 resource "aws_instance" "ec2-k8s-bastion" {
