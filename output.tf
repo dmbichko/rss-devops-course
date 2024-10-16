@@ -31,10 +31,8 @@ output "EC2_private_instance_details" {
 }
 
 output "k3s-server" {
-  value = [
-    for instance in aws_instance.k3s_server : {
-      public_ip  = instance.public_ip
-      private_ip = instance.private_ip
-    }
-  ]
+  value = {
+    public_ip  = aws_instance.k3s_server.public_ip
+    private_ip = aws_instance.k3s_server.private_ip
+  }
 }
