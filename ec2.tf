@@ -122,10 +122,10 @@ resource "aws_instance" "ec2-k8s-private" {
 
   user_data = <<-EOF
               #!/bin/bash
-              #until nc -z ${aws_instance.k3s_server.private_ip} 6443; do
-              #  echo "Waiting for K3s server to be ready..."
-              #  sleep 5
-              #done
+              until nc -z ${aws_instance.k3s_server.private_ip} 6443; do
+                echo "Waiting for K3s server to be ready..."
+                sleep 5
+              done
               # Install K3s agent and register the worker node with the desired label
               #curl -sfL https://get.k3s.io | K3S_URL=https://${aws_instance.k3s_server.private_ip}:6443 K3S_TOKEN=${var.k3s_token} sh -s - agent --kubelet-arg="node-labels=node-role.kubernetes.io/worker=worker"
               curl -sfL https://get.k3s.io | K3S_URL=https://${aws_instance.k3s_server.private_ip}:6443 K3S_TOKEN=${var.k3s_token} sh -s - agent
@@ -155,11 +155,11 @@ resource "aws_instance" "ec2-k8s-bastion" {
 }
 
 resource "aws_instance" "k3s_server" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.medium"
-  #instance_type = var.ec2-instance-type
-  key_name  = aws_key_pair.EC2-instance_key.key_name
-  subnet_id = aws_subnet.public_subnets[0].id
+  ami = data.aws_ami.ubuntu.id
+  #instance_type = "t3.medium"
+  instance_type = var.ec2-instance-type
+  key_name      = aws_key_pair.EC2-instance_key.key_name
+  subnet_id     = aws_subnet.public_subnets[0].id
 
   #install k3s server
   vpc_security_group_ids = [
