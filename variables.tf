@@ -26,7 +26,7 @@ variable "ec2-ssh-key" {
 
 variable "ec2-instance-type" {
   description = "EC2 instance type"
-  default     = "t3.micro"
+  default     = "t2.micro"
   type        = string
 }
 
