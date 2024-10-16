@@ -127,12 +127,12 @@ resource "aws_instance" "ec2-k8s-private" {
                 echo "Waiting for K3s server to be ready..."
                 sleep 5
               done
-              curl -sfL https://get.k3s.io | K3S_URL=https://${aws_instance.k3s_server.private_ip}:6443 K3S_TOKEN=${var.k3s_token} sh -
+              curl -sfL https://get.k3s.io | K3S_URL=https://${aws_instance.k3s_server.private_ip}:6443 K3S_TOKEN=${var.k3s_token} K3S_NODE_LABEL="node-role.kubernetes.io/worker=true" sh -s -
               EOF
 
   tags = merge(
     local.common_tags,
-    tomap({ "Name" = "${local.prefix}-ec2-k3s-agent-private-${count.index + 1}" })
+    tomap({ "Name" = "${local.prefix}-ec2-k3s-agent-${count.index + 1}" })
   )
 }
 
