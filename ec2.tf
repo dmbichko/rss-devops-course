@@ -108,7 +108,6 @@ resource "aws_instance" "ec2-k8s-public" {
 }
 
 resource "aws_instance" "ec2-k8s-private" {
-  depends_on    = aws_instance.k3s_server
   count         = length(aws_subnet.private_subnets[*].id)
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.ec2-instance-type
@@ -141,6 +140,7 @@ resource "aws_instance" "ec2-k8s-private" {
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-ec2-k3s-agent-${count.index + 1}" })
   )
+  depends_on    = aws_instance.k3s_server
 }
 
 resource "aws_instance" "ec2-k8s-bastion" {
