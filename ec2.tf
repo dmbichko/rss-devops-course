@@ -131,9 +131,10 @@ resource "aws_instance" "ec2-k8s-private" {
               #K3S_TOKEN=${var.k3s_token} \
               #sh -s - agent --kubelet-arg "node-labels=node-role.kubernetes.io/worker=worker"
               # Install K3s agent and register the worker node with the desired label
-              curl -sfL https://get.k3s.io | \
-              INSTALL_K3S_EXEC="agent --server https://${aws_instance.k3s_server.private_ip}:6443 --token ${var.k3s_token} --kubelet-arg 'node-labels=node-role.kubernetes.io/worker=worker'" \
-              sh -s -
+              #curl -sfL https://get.k3s.io | \
+              #INSTALL_K3S_EXEC="agent --server https://${aws_instance.k3s_server.private_ip}:6443 --token ${var.k3s_token} --kubelet-arg 'node-labels=node-role.kubernetes.io/worker=worker'" \
+              #sh -s -
+              curl -sfL https://get.k3s.io | K3S_URL=https://${aws_instance.k3s_server.private_ip}:6443 K3S_TOKEN=${var.k3s_token} sh -s - agent --kubelet-arg="node-labels=node-role.kubernetes.io/worker=worker"
               EOF
 
   tags = merge(
