@@ -157,12 +157,18 @@ jobs:
 
             - name: Post-provisioning configuration
               run: |
-                    if [ -z "$K3S_SERVER_ID" ]; then
-                      echo "K3s server ID not found in Terraform output. Skipping post-provisioning steps."
-                    else
-                      if [ -z "$BASTION_PUBLIC_IP" ]; then
-                        echo "Attempting to connect directly to K3s server..."
-                        aws ssm start-session --target $K3S_SERVER_ID --document-name AWS-StartInteractiveCommand --parameters command="kubectl get nodes"
-                    fi
-
-                  
+                if [ -z "$K3S_SERVER_ID" ]; then
+                  echo "K3s server ID not found in Terraform output. Skipping post-provisioning steps."
+                else
+                  if [ -z "$BASTION_PUBLIC_IP" ]; then
+                    echo "Attempting to connect directly to K3s server..."
+                    aws ssm start-session --target $K3S_SERVER_ID --document-name AWS-StartInteractiveCommand --parameters command="kubectl get nodes"
+                  else
+                    echo "Bastion public IP found, but direct connection to K3s server will be attempted..."
+                    aws ssm start-session --target $K3S_SERVER_ID --document-name AWS-StartInteractiveCommand --parameters command="kubectl get nodes"
+                  fi
+                fi
+              env:
+                AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+                AWS_REGION: us-east-1
+                GITHUB_ACTIONS_ROLE_NAME: GithubActionsRole
