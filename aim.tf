@@ -48,13 +48,14 @@ resource "aws_iam_policy" "ssm_policy" {
         ]
         Resource = [
           "arn:aws:ec2:*:${var.aws_account_id}:instance/*",
-          "arn:aws:ssm:*:${var.aws_account_id}:document/AWS-StartInteractiveCommand"
+          "arn:aws:ssm:*:${var.aws_account_id}:document/AWS-StartInteractiveCommand",
+          "arn:aws:ssm:*::document/AWS-StartInteractiveCommand"
         ]
       },
       {
         Effect = "Allow"
         Action = [
-          "ssm:DescribeInstanceProperties",
+          "ssm:DescribeInstanceInformation",
           "ec2:DescribeInstances"
         ]
         Resource = "*"
@@ -84,6 +85,23 @@ resource "aws_iam_role" "ec2_ssm_role" {
     tomap({ "Name" = "${local.prefix}-EC2SSMRole" })
   )
 }
+
+resource "aws_iam_role_policy" "pass_role_policy" {
+  name = "PassRolePolicy"
+  role = aws_iam_role.GithubActionsRole.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = "iam:PassRole"
+        Resource = "arn:aws:iam::${var.aws_account_id}:role/*"
+      }
+    ]
+  })
+}
+
 
 resource "aws_iam_role_policy_attachment" "ssm_managed_instance_core" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
