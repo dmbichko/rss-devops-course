@@ -154,23 +154,8 @@ jobs:
                 if [ -z "$K3S_SERVER_ID" ]; then
                   echo "K3s server ID not found in Terraform output. Skipping post-provisioning steps."
                 else
-                  echo "Attempting to connect to K3s server..."
                   aws ssm start-session \
                     --target $K3S_SERVER_ID \
                     --document-name AWS-StartInteractiveCommand \
-                    --parameters command="kubectl get nodes -o name"
-                  
-                  aws ssm start-session \
-                    --target $K3S_SERVER_ID \
-                    --document-name AWS-StartInteractiveCommand \
-                    --parameters command="kubectl get nodes -o name | cut -d'/' -f2"
-                  
-                  aws ssm start-session \
-                    --target $K3S_SERVER_ID \
-                    --document-name AWS-StartInteractiveCommand \
-                    --parameters command="kubectl get nodes -o name | cut -d'/' -f2 | xargs -I {} kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite"
+                    --parameters command="sudo kubectl get nodes -o name | cut -d'/' -f2 | xargs -I {} sudo kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite"
                 fi
-
-
-                  
-                
