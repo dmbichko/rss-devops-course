@@ -161,7 +161,7 @@ jobs:
                   aws ssm start-session \
                     --target $K3S_SERVER_ID \
                     --document-name AWS-StartInteractiveCommand \
-                    --parameters '{"command":["echo \"#!/bin/bash\nsudo kubectl get nodes -o name | cut -d\"/\" -f2 | xargs -I {} sudo kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite\" > /tmp/label_nodes.sh && chmod +x /tmp/label_nodes.sh"]}'
+                    --parameters '{"command":["echo \"#!/bin/bash\nsudo kubectl get nodes -o custom-columns=NAME:.metadata.name,ROLES:.metadata.labels.node-role\\.kubernetes\\.io/master | grep \"<none>\" | awk \"{print \\$1}\" | xargs -I {} sudo kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite\" > /tmp/label_nodes.sh && chmod +x /tmp/label_nodes.sh"]}'
                   
                   echo "Executing labeling script..."
                   aws ssm start-session \
@@ -170,3 +170,6 @@ jobs:
                     --parameters '{"command":["/tmp/label_nodes.sh"]}'
                 fi
               
+
+ #               --parameters '{"command":["sudo kubectl get nodes -o custom-columns=NAME:.metadata.name,ROLES:.metadata.labels.node-role\\.kubernetes\\.io/master | grep \"<none>\" | awk \"{print \\$1}\" | xargs -I {} sudo kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite"]}'
+ #                   --parameters '{"command":["echo \"#!/bin/bash\nsudo kubectl get nodes -o name | cut -d\"/\" -f2 | xargs -I {} sudo kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite\" > /tmp/label_nodes.sh && chmod +x /tmp/label_nodes.sh"]}'
