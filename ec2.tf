@@ -164,7 +164,7 @@ resource "aws_instance" "k3s_server" {
   iam_instance_profile = aws_iam_instance_profile.ec2_ssm_instance_profile.name
   #install k3s server
   vpc_security_group_ids = [
-    aws_security_group.public_instances.id
+    aws_security_group.allow_all_privata_sub.id
   ]
   #!!!!!!!!!!!!!!!!! You should add special SG
 
