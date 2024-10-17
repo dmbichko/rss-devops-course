@@ -151,32 +151,33 @@ jobs:
                     # Clean up
                     rm -rf aws awscliv2.zip session-manager-plugin.deb
          
-            - name: Check K3s nodes
+                            
+            - name: Check and Label K3s worker nodes
               run: |
                 if [ -z "$K3S_SERVER_ID" ]; then
                   echo "K3s server ID not found in Terraform output. Skipping post-provisioning steps."
                 else
-                  echo "Checking K3s nodes..."
-                  aws ssm start-session \
-                    --target $K3S_SERVER_ID \
-                    --document-name AWS-StartInteractiveCommand \
-                    --parameters '{"command":["sudo kubectl get nodes"]}'
-                fi
-            
-            - name: Label K3s worker nodes
-              if: success()
-              run: |
-                if [ -n "$K3S_SERVER_ID" ]; then
-                  echo "Labeling worker nodes..."
-                  aws ssm start-session \
-                    --target $K3S_SERVER_ID \
-                    --document-name AWS-StartInteractiveCommand \
+                  echo "Checking and labeling K3s nodes..."
+                  aws ssm send-command \
+                    --instance-ids $K3S_SERVER_ID \
+                    --document-name "AWS-RunShellScript" \
                     --parameters '{
-                      "command":[
-                        "sudo kubectl get nodes --no-headers -o custom-columns=NAME:.metadata.name,ROLES:.metadata.labels.node-role\\.kubernetes\\.io/master | grep -v \"<none>\" | awk \"{print \\$1}\" | xargs -I {} sudo kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite"
+                      "commands":[
+                        "echo \"Current nodes:\"",
+                        "sudo kubectl get nodes",
+                        "echo \"Labeling worker nodes:\"",
+                        "sudo kubectl get nodes --no-headers -o custom-columns=NAME:.metadata.name,ROLES:.metadata.labels.node-role\\.kubernetes\\.io/master | grep \"<none>\" | awk \"{print \\$1}\" | xargs -I {} sudo kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite",
+                        "echo \"Nodes after labeling:\"",
+                        "sudo kubectl get nodes"
                       ]
-                    }'
+                    }' \
+                    --output text
+                  
+                  # Wait for the command to complete
+                  sleep 10
+                  
+                  # Check the command output
+                  COMMAND_ID=$(aws ssm list-commands --instance-id $K3S_SERVER_ID --query "Commands[0].CommandId" --output text)
+                  aws ssm get-command-invocation --command-id $COMMAND_ID --instance-id $K3S_SERVER_ID --output text
                 fi
-              
-                
               
