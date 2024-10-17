@@ -113,7 +113,8 @@ resource "aws_instance" "ec2-k8s-private" {
   instance_type = var.ec2-instance-type
   key_name      = aws_key_pair.EC2-instance_key.key_name
 
-  subnet_id = element(aws_subnet.private_subnets[*].id, count.index)
+  iam_instance_profile = aws_iam_instance_profile.ec2_ssm_instance_profile.name
+  subnet_id            = element(aws_subnet.private_subnets[*].id, count.index)
 
   # Security group configuration allowing SSH access and icmp
   vpc_security_group_ids = [
@@ -157,10 +158,10 @@ resource "aws_instance" "ec2-k8s-bastion" {
 resource "aws_instance" "k3s_server" {
   ami = data.aws_ami.ubuntu.id
   #instance_type = "t3.medium"
-  instance_type = var.ec2-instance-type
-  key_name      = aws_key_pair.EC2-instance_key.key_name
-  subnet_id     = aws_subnet.public_subnets[0].id
-
+  instance_type        = var.ec2-instance-type
+  key_name             = aws_key_pair.EC2-instance_key.key_name
+  subnet_id            = aws_subnet.public_subnets[0].id
+  iam_instance_profile = aws_iam_instance_profile.ec2_ssm_instance_profile.name
   #install k3s server
   vpc_security_group_ids = [
     aws_security_group.allow_all_privata_sub.id
