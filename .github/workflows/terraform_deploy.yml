@@ -147,13 +147,8 @@ jobs:
                     
                     # Clean up
                     rm -rf aws awscliv2.zip session-manager-plugin.deb
-                  
+         
                     
-            - name: Get Terraform outputs
-              run: |
-                  echo "K3S_SERVER_ID=$(terraform output -raw k3s_server_id || echo '')" >> $GITHUB_ENV
-                  echo "BASTION_PUBLIC_IP=$(terraform output -raw bastion_public_ip || echo '')" >> $GITHUB_ENV
-                                        
             - name: Post-provisioning configuration
               run: |
                 if [ -z "$K3S_SERVER_ID" ]; then
@@ -163,10 +158,19 @@ jobs:
                   aws ssm start-session \
                     --target $K3S_SERVER_ID \
                     --document-name AWS-StartInteractiveCommand \
+                    --parameters command="kubectl get nodes -o name"
+                  
+                  aws ssm start-session \
+                    --target $K3S_SERVER_ID \
+                    --document-name AWS-StartInteractiveCommand \
+                    --parameters command="kubectl get nodes -o name | cut -d'/' -f2"
+                  
+                  aws ssm start-session \
+                    --target $K3S_SERVER_ID \
+                    --document-name AWS-StartInteractiveCommand \
                     --parameters command="kubectl get nodes -o name | cut -d'/' -f2 | xargs -I {} kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite"
                 fi
-              env:
-                AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-                AWS_REGION: us-east-1
-                GITHUB_ACTIONS_ROLE_NAME: GithubActionsRole
+
+
+                  
                 
