@@ -44,6 +44,9 @@ resource "aws_iam_policy" "ssm_policy" {
           "ssm:TerminateSession",
           "ssm:ResumeSession",
           "ssm:DescribeSessions",
+          "ssm:SendCommand",
+          "ssm:GetCommandInvocation",
+          "ssm:ListCommands",
           "ssm:GetConnectionStatus"
         ]
         Resource = [
