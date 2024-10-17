@@ -147,8 +147,22 @@ jobs:
                     
                     # Clean up
                     rm -rf aws awscliv2.zip session-manager-plugin.deb
-                 
+                  
+                    
+            - name: Get Terraform outputs
+              run: |
+                echo "K3S_SERVER_ID=$(terraform output -raw k3s_server_id || echo '')" >> $GITHUB_ENV
+                echo "BASTION_PUBLIC_IP=$(terraform output -raw bastion_public_ip || echo '')" >> $GITHUB_ENV
+                                        
+
             - name: Post-provisioning configuration
               run: |
-                    SERVER_ID=$(terraform output -raw k3s_server_id)
-                    aws ssm start-session --target $SERVER_ID --document-name AWS-StartInteractiveCommand --parameters command="kubectl get nodes"
+                    if [ -z "$K3S_SERVER_ID" ]; then
+                      echo "K3s server ID not found in Terraform output. Skipping post-provisioning steps."
+                    else
+                      if [ -z "$BASTION_PUBLIC_IP" ]; then
+                        echo "Attempting to connect directly to K3s server..."
+                        aws ssm start-session --target $K3S_SERVER_ID --document-name AWS-StartInteractiveCommand --parameters command="kubectl get nodes"
+                    fi
+
+                  
