@@ -94,8 +94,8 @@ resource "aws_iam_role_policy" "pass_role_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = "iam:PassRole"
+        Effect   = "Allow"
+        Action   = "iam:PassRole"
         Resource = "arn:aws:iam::${var.aws_account_id}:role/*"
       }
     ]
