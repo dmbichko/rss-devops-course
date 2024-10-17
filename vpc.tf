@@ -58,27 +58,14 @@ resource "aws_route_table_association" "public_routes" {
 }
 
 # NAT Gateways with Elastic IPs
-resource "aws_eip" "nat-eip" {
+/*resource "aws_eip" "nat-eip" {
   count  = length(var.private_subnets)
   domain = "vpc"
   tags = merge(
     local.common_tags,
     { Name = "${local.prefix}-EIP-K8s-${count.index + 1}" }
   )
-}
-
-resource "aws_network_interface" "nat_eni" {
-  count             = length(var.public_subnets)
-  subnet_id         = aws_subnet.public_subnets[count.index].id
-  security_groups   = [aws_security_group.nat_sg.id]
-  source_dest_check = false
-
-  tags = merge(
-    local.common_tags,
-    { Name = "${local.prefix}-NAT-ENI-${count.index + 1}" }
-  )
-}
-
+}*/
 
 /*resource "aws_nat_gateway" "nat" {
   count         = length(var.private_subnets)
@@ -104,8 +91,6 @@ resource "aws_subnet" "private_subnets" {
   )
 }
 
-
-
 # Private Route Tables
 resource "aws_route_table" "private_rt" {
   count  = length(var.private_subnets)
@@ -121,6 +106,17 @@ resource "aws_route_table" "private_rt" {
   )
 }
 
+resource "aws_network_interface" "nat_eni" {
+  count             = length(var.public_subnets)
+  subnet_id         = aws_subnet.public_subnets[count.index].id
+  security_groups   = [aws_security_group.nat_sg.id]
+  source_dest_check = false
+
+  tags = merge(
+    local.common_tags,
+    { Name = "${local.prefix}-NAT-ENI-${count.index + 1}" }
+  )
+}
 resource "aws_route" "private_nat_route" {
   count                  = length(var.private_subnets)
   route_table_id         = aws_route_table.private_rt[count.index].id
