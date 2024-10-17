@@ -29,6 +29,46 @@ resource "aws_iam_role" "GithubActionsRole" {
   }
 }
 
+resource "aws_iam_policy" "ssm_policy" {
+  name        = "SSMSessionManagerPolicy"
+  path        = "/"
+  description = "IAM policy for Systems Manager Session Manager"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:StartSession",
+          "ssm:TerminateSession",
+          "ssm:ResumeSession",
+          "ssm:DescribeSessions",
+          "ssm:GetConnectionStatus"
+        ]
+        Resource = [
+          "arn:aws:ec2:*:${var.aws_account_id}:instance/*",
+          "arn:aws:ssm:*:${var.aws_account_id}:document/AWS-StartInteractiveCommand"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:DescribeInstanceProperties",
+          "ec2:DescribeInstances"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_policy_attachment" {
+  role       = aws_iam_role.GithubActionsRole.name
+  policy_arn = aws_iam_policy.ssm_policy.arn
+}
+
+
 resource "aws_iam_role_policy_attachment" "dynamodb_policy_attachment" {
   role       = aws_iam_role.GithubActionsRole.name
   policy_arn = aws_iam_policy.dynamodb_policy.arn
