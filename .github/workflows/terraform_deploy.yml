@@ -151,12 +151,23 @@ jobs:
                     # Clean up
                     rm -rf aws awscliv2.zip session-manager-plugin.deb
          
-                    
-            - name: Post-provisioning configuration
+            - name: Check K3s nodes
               run: |
                 if [ -z "$K3S_SERVER_ID" ]; then
                   echo "K3s server ID not found in Terraform output. Skipping post-provisioning steps."
                 else
+                  echo "Checking K3s nodes..."
+                  aws ssm start-session \
+                    --target $K3S_SERVER_ID \
+                    --document-name AWS-StartInteractiveCommand \
+                    --parameters '{"command":["sudo kubectl get nodes"]}'
+                fi
+            
+            - name: Label K3s worker nodes
+              if: success()
+              run: |
+                if [ -n "$K3S_SERVER_ID" ]; then
+                  echo "Labeling worker nodes..."
                   aws ssm start-session \
                     --target $K3S_SERVER_ID \
                     --document-name AWS-StartInteractiveCommand \
@@ -166,4 +177,6 @@ jobs:
                       ]
                     }'
                 fi
-
+              
+                
+              
