@@ -160,5 +160,5 @@ jobs:
                   aws ssm start-session \
                     --target $K3S_SERVER_ID \
                     --document-name AWS-StartInteractiveCommand \
-                    --parameters command="sudo kubectl get nodes -o name | cut -d'/' -f2 | xargs -I {} sudo kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite"
+                    --parameters '{"command":["sudo kubectl get nodes -o name | cut -d\"/\" -f2 | xargs -I {} sudo kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite"]}'
                 fi
