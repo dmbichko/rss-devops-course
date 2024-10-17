@@ -122,14 +122,32 @@ jobs:
             - name: Terraform Apply
               run: terraform apply -auto-approve -var="aws_account_id=${{ env.AWS_ACCOUNT_ID }}" -var="bastion-ssh-key=${{ env.BASTION_SSH_KEY }}" -var="ec2-ssh-key=${{ env.EC2_SSH_KEY }}" -var="k3s_token=${{env.K3S_TOKEN}}"
 
-            - name: Install AWS CLI and Session Manager plugin
+
+            - name: Install or update AWS CLI and Session Manager plugin
               run: |
-                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                    unzip awscliv2.zip
-                    sudo ./aws/install
-                    curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
-                    sudo dpkg -i session-manager-plugin.deb
-      
+                    if [ -f "/usr/local/bin/aws" ]; then
+                      echo "AWS CLI is already installed. Updating..."
+                      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                      unzip -q awscliv2.zip
+                      sudo ./aws/install --update
+                    else
+                      echo "Installing AWS CLI..."
+                      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                      unzip -q awscliv2.zip
+                      sudo ./aws/install
+                    fi
+                    
+                    if ! command -v session-manager-plugin &> /dev/null; then
+                      echo "Installing Session Manager plugin..."
+                      curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
+                      sudo dpkg -i session-manager-plugin.deb
+                    else
+                      echo "Session Manager plugin is already installed."
+                    fi
+                    
+                    # Clean up
+                    rm -rf aws awscliv2.zip session-manager-plugin.deb
+                 
             - name: Post-provisioning configuration
               run: |
                     SERVER_ID=$(terraform output -raw k3s_server_id)
