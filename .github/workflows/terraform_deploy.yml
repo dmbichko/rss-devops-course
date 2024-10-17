@@ -158,20 +158,11 @@ jobs:
                   echo "K3s server ID not found in Terraform output. Skipping post-provisioning steps."
                 else
                   echo "Checking and labeling K3s nodes..."
-                  aws ssm send-command \
-                    --instance-ids $K3S_SERVER_ID \
-                    --document-name "AWS-RunShellScript" \
-                    --parameters '{
-                      "commands":[
-                        "echo \"Current nodes:\"",
-                        "sudo kubectl get nodes",
-                        "echo \"Labeling worker nodes:\"",
-                        "sudo kubectl get nodes --no-headers -o custom-columns=NAME:.metadata.name,ROLES:.metadata.labels.node-role\\.kubernetes\\.io/master | grep \"<none>\" | awk \"{print \\$1}\" | xargs -I {} sudo kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite",
-                        "echo \"Nodes after labeling:\"",
-                        "sudo kubectl get nodes"
-                      ]
-                    }' \
-                    --output text
+
+                  aws ssm start-session \
+                    --target $K3S_SERVER_ID \
+                    --document-name AWS-StartInteractiveCommand \
+                    --parameters '{"command":["sudo kubectl get nodes -o custom-columns=NAME:.metadata.name,ROLES:.metadata.labels.node-role\\.kubernetes\\.io/master | grep \"<none>\" | awk \"{print \\$1}\" | xargs -I {} sudo kubectl label node {} node-role.kubernetes.io/worker=worker --overwrite"]}'
                   
                   # Wait for the command to complete
                   sleep 10
