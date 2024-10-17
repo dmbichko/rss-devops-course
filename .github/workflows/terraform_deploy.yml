@@ -122,7 +122,10 @@ jobs:
             - name: Terraform Apply
               run: terraform apply -auto-approve -var="aws_account_id=${{ env.AWS_ACCOUNT_ID }}" -var="bastion-ssh-key=${{ env.BASTION_SSH_KEY }}" -var="ec2-ssh-key=${{ env.EC2_SSH_KEY }}" -var="k3s_token=${{env.K3S_TOKEN}}"
 
-
+            - name: Get Terraform outputs
+              run: |
+                echo "K3S_SERVER_ID=$(terraform output -raw k3s_server_id || echo '')" >> $GITHUB_ENV
+            
             - name: Install or update AWS CLI and Session Manager plugin
               run: |
                     if [ -f "/usr/local/bin/aws" ]; then
