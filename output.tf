@@ -7,8 +7,8 @@ resource "aws_eip" "bastion" {
 output "bastion_public_ip" {
   value = aws_eip.bastion.public_ip
 }
-
-output "EC2_public_instance_details" {
+//Deleted these intances because of TAKS3
+/*output "EC2_public_instance_details" {
   value = [
     for instance in aws_instance.ec2-k8s-public : {
       instance_id = instance.id
@@ -17,7 +17,7 @@ output "EC2_public_instance_details" {
       subnet_id   = instance.subnet_id
     }
   ]
-}
+}*/
 
 output "EC2_private_instance_details" {
   value = [
