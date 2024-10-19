@@ -192,7 +192,7 @@ resource "aws_instance" "ec2-k8s-private" {
 
   tags = merge(
     local.common_tags,
-    tomap({ "Name" = "${local.prefix}-ec2-k3s-agent-${count.index + 1}" })
+    tomap({ "Name" = "${local.prefix}-ec2-k3s-agent" })
   )
   depends_on = [aws_instance.k3s_server]
 }
