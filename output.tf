@@ -40,3 +40,8 @@ output "k3s-server" {
 output "k3s_server_id" {
   value = aws_instance.k3s_server.id
 }
+
+output "bastion_server_id" {
+  value       = aws_instance.ec2-k8s-bastion.id
+  description = "Bastion Server ID"
+}

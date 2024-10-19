@@ -125,7 +125,7 @@ jobs:
             - name: Get Terraform outputs
               run: |
                 echo "K3S_SERVER_ID=$(terraform output -raw k3s_server_id || echo '')" >> $GITHUB_ENV
-            
+                echo "BASTION_HOST_ID=$(terraform output -raw bastion_server_id || echo '')" >> $GITHUB_ENV
             - name: Install or update AWS CLI and Session Manager plugin
               run: |
                     if [ -f "/usr/local/bin/aws" ]; then
@@ -150,7 +150,47 @@ jobs:
                     
                     # Clean up
                     rm -rf aws awscliv2.zip session-manager-plugin.deb
-         
+ 
+            - name: Copy K3s config to bastion host
+              run: |
+                if [ -z "$K3S_SERVER_ID" ] || [ -z "$BASTION_HOST_ID" ]; then
+                  echo "K3s server ID or Bastion host ID not found. Skipping config copy."
+                else
+                  echo "Fetching K3s config from control server..."
+                  K3S_CONFIG=$(aws ssm send-command \
+                    --instance-ids $K3S_SERVER_ID \
+                    --document-name "AWS-RunShellScript" \
+                    --parameters '{"commands":["sudo cat /etc/rancher/k3s/k3s.yaml"]}' \
+                    --output text \
+                    --query "Commands[0].CommandId")
+            
+                  # Wait for the command to complete
+                  aws ssm wait command-executed --command-id $K3S_CONFIG --instance-id $K3S_SERVER_ID
+            
+                  # Fetch the config content
+                  CONFIG_CONTENT=$(aws ssm get-command-invocation \
+                    --command-id $K3S_CONFIG \
+                    --instance-id $K3S_SERVER_ID \
+                    --query "StandardOutputContent" \
+                    --output text)
+            
+                  # Replace the server address with the public IP or DNS of your K3s server
+                  K3S_SERVER_IP=$(aws ec2 describe-instances --instance-ids $K3S_SERVER_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+                  CONFIG_CONTENT=$(echo "$CONFIG_CONTENT" | sed "s/127.0.0.1/$K3S_SERVER_IP/")
+            
+                  echo "Copying K3s config to bastion host..."
+                  aws ssm send-command \
+                    --instance-ids $BASTION_HOST_ID \
+                    --document-name "AWS-RunShellScript" \
+                    --parameters "{\"commands\":[\"echo '$CONFIG_CONTENT' > ~/.kube/config\", \"chmod 600 ~/.kube/config\"]}" \
+                    --output text
+            
+                  echo "K3s config copied to bastion host."
+                fi
+              env:
+                K3S_SERVER_ID: ${{ env.K3S_SERVER_ID }}
+                BASTION_HOST_ID: ${{ env.BASTION_HOST_ID }}                 
+                    
 #            - name: Label K3s worker nodes
 #              run: |
 #                if [ -z "$K3S_SERVER_ID" ]; then
