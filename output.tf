@@ -19,15 +19,20 @@ output "bastion_public_ip" {
   ]
 }*/
 
-output "EC2_private_instance_details" {
+/*output "EC2_private_instance_details" {
   value = [
     for instance in aws_instance.ec2-k8s-private : {
       instance_id = instance.id
-      #      public_ip   = instance.public_ip
-      private_ip = instance.private_ip
-      subnet_id  = instance.subnet_id
+      public_ip   = instance.public_ip
+      private_ip  = instance.private_ip
+      subnet_id   = instance.subnet_id
     }
   ]
+}*/
+
+output "EC2_k3s-agent" {
+  value       = aws_instance.ec2-k8s-private.private_ip
+  description = "K3S Agent IP Address"
 }
 
 output "k3s-server" {
