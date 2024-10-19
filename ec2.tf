@@ -166,13 +166,13 @@ resource "aws_instance" "k3s_server" {
 }
 
 resource "aws_instance" "ec2-k8s-private" {
-  count         = length(aws_subnet.private_subnets[1].id)
+  #count         = length(aws_subnet.private_subnets[1].id)
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.ec2-instance-type
   key_name      = aws_key_pair.EC2-instance_key.key_name
 
   iam_instance_profile = aws_iam_instance_profile.ec2_ssm_instance_profile.name
-  subnet_id            = element(aws_subnet.private_subnets[*].id, count.index)
+  subnet_id            = aws_subnet.private_subnets[1].id
 
   # Security group configuration allowing SSH access and icmp
   vpc_security_group_ids = [
