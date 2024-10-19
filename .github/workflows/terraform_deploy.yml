@@ -177,13 +177,15 @@ jobs:
                 fi
             
                 CONFIG_CONTENT=$(echo "$CONFIG_CONTENT" | sed "s/127.0.0.1/$K3S_SERVER_IP/")
-            
-                echo "Modified config content:"
-                echo "$CONFIG_CONTENT"
-            
+
                 echo "Copying K3s config to bastion host..."
-                aws ssm start-session --target $BASTION_HOST_ID --document-name AWS-StartInteractiveCommand --parameters command="mkdir -p ~/.kube && echo '$CONFIG_CONTENT' > ~/.kube/config && chmod 600 ~/.kube/config"
-            
+                aws ssm start-session --target $BASTION_HOST_ID --document-name AWS-StartInteractiveCommand --parameters command="bash -c '
+                  mkdir -p ~/.kube
+                  cat << EOF > ~/.kube/config
+                  $CONFIG_CONTENT
+                  EOF
+                  chmod 600 ~/.kube/config
+                '"                
                 if [ $? -ne 0 ]; then
                   echo "Failed to copy K3s config to bastion host."
                   exit 1
