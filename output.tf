@@ -23,16 +23,16 @@ output "EC2_private_instance_details" {
   value = [
     for instance in aws_instance.ec2-k8s-private : {
       instance_id = instance.id
-      public_ip   = instance.public_ip
-      private_ip  = instance.private_ip
-      subnet_id   = instance.subnet_id
+      #      public_ip   = instance.public_ip
+      private_ip = instance.private_ip
+      subnet_id  = instance.subnet_id
     }
   ]
 }
 
 output "k3s-server" {
   value = {
-    public_ip  = aws_instance.k3s_server.public_ip
+    #    public_ip  = aws_instance.k3s_server.public_ip
     private_ip = aws_instance.k3s_server.private_ip
   }
 }
