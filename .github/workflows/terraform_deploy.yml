@@ -90,8 +90,8 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.GITHUB_ACTIONS_ROLE_NAME }}  
           aws-region: ${{ env.AWS_REGION }}
-      - name: Terraform unlock
-        run: terraform force-unlock -force e586250e-c96a-97f4-bf1c-118f928c1687 
+#      - name: Terraform unlock
+#        run: terraform force-unlock -force e586250e-c96a-97f4-bf1c-118f928c1687 
       - name: Terraform Plan
         run: terraform plan -input=false -var="aws_account_id=${{ env.AWS_ACCOUNT_ID }}" -var="bastion-ssh-key=${{ env.BASTION_SSH_KEY }}" -var="ec2-ssh-key=${{ env.EC2_SSH_KEY }}" -var="k3s_token=${{env.K3S_TOKEN}}"
 
