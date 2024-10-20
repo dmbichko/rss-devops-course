@@ -37,7 +37,6 @@ output "EC2_k3s-agent" {
 
 output "k3s-server" {
   value = {
-    #    public_ip  = aws_instance.k3s_server.public_ip
     private_ip = aws_instance.k3s_server.private_ip
   }
 }
