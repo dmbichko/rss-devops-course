@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - dev_task3
+      - task3
 
 env:
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

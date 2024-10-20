@@ -16,7 +16,7 @@ output "EC2_k3s-server" {
 }
 
 output "k3s_server_id" {
-  value = aws_instance.k3s_server.id
+  value = aws_instance.ec2-k3s_server.id
 }
 
 output "bastion_server_id" {
