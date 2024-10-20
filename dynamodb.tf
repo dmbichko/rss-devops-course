@@ -11,4 +11,7 @@ resource "aws_dynamodb_table" "terraform_locks" {
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-dynamoDB-terraform-state" })
   )
+  lifecycle {
+    prevent_destroy = true
+  }
 }

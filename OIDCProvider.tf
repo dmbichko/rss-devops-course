@@ -8,4 +8,7 @@ resource "aws_iam_openid_connect_provider" "github_actions_IODC_provider" {
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-${var.terraform_github_actions_IODC_provider_name}" })
   )
+  lifecycle {
+    prevent_destroy = true
+  }
 }
