@@ -5,13 +5,13 @@ output "bastion_public_ip" {
 }
 
 output "EC2_k3s-agent" {
-  value       = aws_instance.ec2-k8s-private.private_ip
+  value       = aws_instance.ec2-k3s-worker.private_ip
   description = "K3S Agent IP Address"
 }
 
-output "k3s-server" {
+output "EC2_k3s-server" {
   value = {
-    private_ip = aws_instance.k3s_server.private_ip
+    private_ip = aws_instance.ec2-k3s_server.private_ip
   }
 }
 
