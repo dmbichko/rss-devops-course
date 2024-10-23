@@ -29,18 +29,29 @@ data "aws_ami" "amazon_linux_2" {
   }
 }
 
+data "template_file" "user_data" {
+  template = file("${path.module}/nginx_proxy_userdata.sh")
+
+  vars = {
+    jenkins_private_ip = aws_instance.ec2-k3s_server.private_ip
+    jenkins_nodeport = "32000"
+  }
+}
+
 # Create a private key for aws instances
 resource "aws_key_pair" "EC2-instance_key" {
   key_name = "K8s-EC2-ssh-key"
+  public_key = file("${path.module}/ec2-ssh-key.pub")
   # store pub key in github secter
-  public_key = var.ec2-ssh-key
+  #public_key = var.ec2-ssh-key
 }
 
 # Create a private key for bastion host
 resource "aws_key_pair" "bastion_key" {
   key_name = "K8s-Bastion-ssh-key"
+  public_key = file("${path.module}/bastion-ssh-key.pub")  
   # store pub key in github secter
-  public_key = var.bastion-ssh-key
+  #public_key = var.bastion-ssh-key
 }
 
 resource "aws_instance" "nat" {
@@ -93,8 +104,7 @@ resource "aws_instance" "ec2-k3s_server" {
   instance_type = var.ec2-instance-type-k3s
   #instance_type        = var.ec2-instance-type
   key_name             = aws_key_pair.EC2-instance_key.key_name
-  subnet_id            = aws_subnet.public_subnets[0].id
-  iam_instance_profile = aws_iam_instance_profile.ec2_ssm_instance_profile.name
+  subnet_id            = aws_subnet.private_subnets[0].id
   #install k3s server
   vpc_security_group_ids = [
     aws_security_group.allow_all_privata_sub.id
@@ -113,13 +123,11 @@ resource "aws_instance" "ec2-k3s_server" {
 }
 
 resource "aws_instance" "ec2-k3s-worker" {
-  #count         = length(aws_subnet.private_subnets[1].id)
+  count         = length(aws_subnet.private_subnets[1].id)
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.ec2-instance-type
   key_name      = aws_key_pair.EC2-instance_key.key_name
-
-  iam_instance_profile = aws_iam_instance_profile.ec2_ssm_instance_profile.name
-  subnet_id            = aws_subnet.private_subnets[1].id
+  subnet_id            = aws_subnet.private_subnets[*].id
 
   # Security group configuration allowing SSH access and icmp
   vpc_security_group_ids = [
@@ -143,6 +151,24 @@ resource "aws_instance" "ec2-k3s-worker" {
   )
   depends_on = [aws_instance.ec2-k3s_server]
 }
+resource "aws_instance" "ec2-nginx-proxy" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.ec2-instance-type
+  key_name      = aws_key_pair.EC2-instance_key.key_name
+  subnet_id = aws_subnet.public_subnets[0].id
+  ####change rules to have access to private network K3s
+  vpc_security_group_ids = [
+    aws_security_group.public_instances.id
+  ]
+  user_data = data.template_file.user_data.rendered
+  tags = merge(
+    local.common_tags,
+    tomap({ "Name" = "${local.prefix}-ec2-nginx-proxy" })
+  )
+  depends_on = [ aws_instance.ec2-k3s_server ]
+}
+
+
 
 //Deleted these intances because of TAKS3
 /*resource "aws_instance" "ec2-k8s-public" {
