@@ -123,11 +123,11 @@ resource "aws_instance" "ec2-k3s_server" {
 }
 
 resource "aws_instance" "ec2-k3s-worker" {
-  count         = length(aws_subnet.private_subnets[1].id)
+  count         = length(aws_subnet.private_subnets[*].id)
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.ec2-instance-type
   key_name      = aws_key_pair.EC2-instance_key.key_name
-  subnet_id            = aws_subnet.private_subnets[*].id
+  subnet_id = element(aws_subnet.private_subnets[*].id, count.index)
 
   # Security group configuration allowing SSH access and icmp
   vpc_security_group_ids = [
