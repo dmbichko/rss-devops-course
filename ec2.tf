@@ -105,6 +105,7 @@ resource "aws_instance" "ec2-k3s_server" {
   #instance_type        = var.ec2-instance-type
   key_name             = aws_key_pair.EC2-instance_key.key_name
   subnet_id            = aws_subnet.private_subnets[0].id
+
   #install k3s server
   vpc_security_group_ids = [
     aws_security_group.allow_all_privata_sub.id

@@ -217,7 +217,7 @@ controller:
   # For minikube, set this to NodePort, elsewhere uses LoadBalancer
   # Use ClusterIP if your setup includes ingress controller
   # -- k8s service type
-  serviceType: nodePort
+  serviceType: ClusterIP
 
   # -- k8s service clusterIP. Only used if serviceType is ClusterIP
   clusterIp:
@@ -226,7 +226,7 @@ controller:
   # -- k8s target port
   targetPort: 8080
   # -- k8s node port. Only used if serviceType is NodePort
-  nodePort: 32000
+  nodePort:
 
   # Use Local to preserve the client source IP and avoids a second hop for LoadBalancer and NodePort type services,
   # but risks potentially imbalanced traffic spreading.
@@ -1250,7 +1250,7 @@ persistence:
   # If undefined (the default) or set to null, no storageClassName spec is
   #   set, choosing the default provisioner (gp2 on AWS, standard on GKE, AWS & OpenStack)
   # -- Storage class for the PVC
- storageClass: jenkins-pv
+  storageClass: jenkins-pv
   # -- Annotations for the PVC
   annotations: {}
   # -- Labels for the PVC
@@ -1322,6 +1322,10 @@ serviceAccount:
   # -- Configures annotations for the ServiceAccount
   annotations: {}
   # -- Configures extra labels for the ServiceAccount
+  extraLabels: {}
+  # -- Controller ServiceAccount image pull secret
+  imagePullSecretName:
+
 
 serviceAccountAgent:
   # -- Configures if an agent ServiceAccount should be created
