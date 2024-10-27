@@ -34,24 +34,24 @@ data "template_file" "user_data" {
 
   vars = {
     jenkins_private_ip = aws_instance.ec2-k3s_server.private_ip
-    jenkins_nodeport = "32000"
+    jenkins_nodeport   = "32000"
   }
 }
 
 # Create a private key for aws instances
 resource "aws_key_pair" "EC2-instance_key" {
-  key_name = "K8s-EC2-ssh-key"
-  public_key = file("${path.module}/ec2-ssh-key.pub")
+  key_name   = "K8s-EC2-ssh-key"
+  #public_key = file("${path.module}/ec2-ssh-key.pub")
   # store pub key in github secter
-  #public_key = var.ec2-ssh-key
+  public_key = var.ec2-ssh-key
 }
 
 # Create a private key for bastion host
 resource "aws_key_pair" "bastion_key" {
-  key_name = "K8s-Bastion-ssh-key"
-  public_key = file("${path.module}/bastion-ssh-key.pub")  
+  key_name   = "K8s-Bastion-ssh-key"
+  #public_key = file("${path.module}/bastion-ssh-key.pub")
   # store pub key in github secter
-  #public_key = var.bastion-ssh-key
+  public_key = var.bastion-ssh-key
 }
 
 resource "aws_instance" "nat" {
@@ -84,9 +84,10 @@ resource "aws_instance" "nat" {
 }
 
 resource "aws_instance" "ec2-k8s-bastion" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = var.ec2-instance-type
-  key_name      = aws_key_pair.bastion_key.key_name
+  ami                  = data.aws_ami.ubuntu.id
+  instance_type        = var.ec2-instance-type
+  key_name             = aws_key_pair.bastion_key.key_name
+  iam_instance_profile = aws_iam_instance_profile.bastion_profile.name
 
   subnet_id = aws_subnet.public_subnets[0].id
 
@@ -103,8 +104,8 @@ resource "aws_instance" "ec2-k3s_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.ec2-instance-type-k3s
   #instance_type        = var.ec2-instance-type
-  key_name             = aws_key_pair.EC2-instance_key.key_name
-  subnet_id            = aws_subnet.private_subnets[0].id
+  key_name  = aws_key_pair.EC2-instance_key.key_name
+  subnet_id = aws_subnet.private_subnets[0].id
 
   #install k3s server
   vpc_security_group_ids = [
@@ -122,13 +123,13 @@ resource "aws_instance" "ec2-k3s_server" {
     tomap({ "Name" = "${local.prefix}-ec2-k3s-server" })
   )
 }
-
+/*!!!!
 resource "aws_instance" "ec2-k3s-worker" {
   count         = length(aws_subnet.private_subnets[*].id)
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.ec2-instance-type
   key_name      = aws_key_pair.EC2-instance_key.key_name
-  subnet_id = element(aws_subnet.private_subnets[*].id, count.index)
+  subnet_id     = element(aws_subnet.private_subnets[*].id, count.index)
 
   # Security group configuration allowing SSH access and icmp
   vpc_security_group_ids = [
@@ -151,12 +152,14 @@ resource "aws_instance" "ec2-k3s-worker" {
     tomap({ "Name" = "${local.prefix}-ec2-k3s-agent" })
   )
   depends_on = [aws_instance.ec2-k3s_server]
-}
+}*/
+
+/*!!!!
 resource "aws_instance" "ec2-nginx-proxy" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.ec2-instance-type
   key_name      = aws_key_pair.EC2-instance_key.key_name
-  subnet_id = aws_subnet.public_subnets[0].id
+  subnet_id     = aws_subnet.public_subnets[0].id
   ####change rules to have access to private network K3s
   vpc_security_group_ids = [
     aws_security_group.public_instances.id
@@ -166,7 +169,36 @@ resource "aws_instance" "ec2-nginx-proxy" {
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-ec2-nginx-proxy" })
   )
-  depends_on = [ aws_instance.ec2-k3s_server ]
+  depends_on = [aws_instance.ec2-k3s_server]
+}*/
+
+resource "null_resource" "install_helm_jenkins" {
+  depends_on = [aws_instance.ec2-k8s-bastion, aws_instance.ec2-k3s_server]
+
+  provisioner "local-exec" {
+    command = <<EOF
+    aws ssm send-command \
+      --instance-ids ${aws_instance.ec2-k8s-bastion.id} \
+      --document-name "AWS-RunShellScript" \
+      --parameters '{
+        "commands": [
+          "curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash",
+          "helm repo add jenkins https://charts.jenkins.io",
+          "helm repo update",
+          "# Download kubectl",
+          "curl -LO \"https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl\"",
+          "# Install kubectl",
+          "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl",
+          "# Verify installation", 
+          "kubectl version --client",         
+          "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${aws_instance.ec2-k3s_server.private_ip}:/etc/rancher/k3s/k3s.yaml /tmp/k3s_kubeconfig",
+          "sed -i \"s/127.0.0.1/${aws_instance.ec2-k3s_server.private_ip}/g\" /tmp/k3s_kubeconfig",
+          "export KUBECONFIG=/tmp/k3s_kubeconfig" 
+        ]
+      }' \
+      --output text
+    EOF
+  }
 }
 
 

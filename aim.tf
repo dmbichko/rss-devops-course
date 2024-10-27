@@ -67,27 +67,6 @@ resource "aws_iam_policy" "ssm_policy" {
   })
 }
 
-resource "aws_iam_role" "ec2_ssm_role" {
-  name = "EC2SSMRole"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = merge(
-    local.common_tags,
-    tomap({ "Name" = "${local.prefix}-EC2SSMRole" })
-  )
-}
 
 resource "aws_iam_role_policy" "pass_role_policy" {
   name = "PassRolePolicy"
@@ -104,24 +83,41 @@ resource "aws_iam_role_policy" "pass_role_policy" {
     ]
   })
 }
+resource "aws_iam_role" "bastion_role" {
+  name = "bastion_ssm_role"
 
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+    tags = merge(
+    local.common_tags,
+    tomap({ "Name" = "${local.prefix}-EC2SSMRole" })
+  )
+}
 
-resource "aws_iam_role_policy_attachment" "ssm_managed_instance_core" {
+resource "aws_iam_role_policy_attachment" "bastion_ssm_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  role       = aws_iam_role.ec2_ssm_role.name
+  role       = aws_iam_role.bastion_role.name
 }
 
-resource "aws_iam_instance_profile" "ec2_ssm_instance_profile" {
-  name = "EC2SSMInstanceProfile"
-  role = aws_iam_role.ec2_ssm_role.name
+resource "aws_iam_instance_profile" "bastion_profile" {
+  name = "bastion_ssm_profile"
+  role = aws_iam_role.bastion_role.name
 }
-
 
 resource "aws_iam_role_policy_attachment" "ssm_policy_attachment" {
   role       = aws_iam_role.GithubActionsRole.name
   policy_arn = aws_iam_policy.ssm_policy.arn
 }
-
 
 resource "aws_iam_role_policy_attachment" "dynamodb_policy_attachment" {
   role       = aws_iam_role.GithubActionsRole.name
