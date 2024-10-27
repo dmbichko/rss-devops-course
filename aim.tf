@@ -100,6 +100,7 @@ resource "aws_iam_role" "bastion_role" {
     tomap({ "Name" = "${local.prefix}-EC2SSMRole" })
   )
 }
+
 resource "aws_iam_role_policy" "ssm_parameter_access" {
   name = "ssm_parameter_access"
   role = aws_iam_role.bastion_role.id

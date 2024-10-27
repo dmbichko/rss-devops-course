@@ -113,11 +113,14 @@ resource "aws_instance" "ec2-k3s_server" {
   ]
   #!!!!!!!!!!!!!!!!! You should add special SG
 
-  user_data = <<-EOF
+  user_data  = <<-EOF
               #!/bin/bash
               curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - --token ${var.k3s_token}
+              chmod 644 /etc/rancher/k3s/k3s.yaml
+              cp /etc/rancher/k3s/k3s.yaml /home/system.administrator/.kube/conf
+              chown system.administrator:system.administrator /home/system.administrator/.kube/conf
               EOF
-
+  depends_on = [aws_instance.nat]
   tags = merge(
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-ec2-k3s-server" })
