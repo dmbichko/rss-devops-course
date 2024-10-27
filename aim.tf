@@ -49,13 +49,7 @@ resource "aws_iam_policy" "ssm_policy" {
           "ssm:ListCommands",
           "ssm:GetConnectionStatus"
         ]
-        Resource = [
-          "arn:aws:ec2:*:${var.aws_account_id}:instance/*",
-          "arn:aws:ssm:*:${var.aws_account_id}:document/AWS-StartInteractiveCommand",
-          "arn:aws:ssm:*::document/AWS-StartInteractiveCommand",
-          "arn:aws:ssm:*:${var.aws_account_id}:document/AWS-RunShellScript",
-          "arn:aws:ssm:*::document/AWS-RunShellScript"
-        ]
+        Resource = "*"
       },
       {
         Effect = "Allow"
