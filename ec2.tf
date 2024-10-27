@@ -182,10 +182,15 @@ resource "null_resource" "install_helm_jenkins" {
       --document-name "AWS-RunShellScript" \
       --parameters '{
         "commands": [
+          "# Update and install necessary packages",
+          "sudo apt-get update",
+          "sudo apt-get install -y unzip curl",
           "# Install AWS CLI",
           "curl \"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\" -o \"awscliv2.zip\"",
           "unzip awscliv2.zip",
           "sudo ./aws/install",
+          "# Verify AWS CLI installation",
+          "/usr/local/bin/aws --version",
           "# Install Helm",
           "curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash",
           "helm repo add jenkins https://charts.jenkins.io",
@@ -196,7 +201,7 @@ resource "null_resource" "install_helm_jenkins" {
           "kubectl version --client",
           "# Setup SSH key",
           "mkdir -p ~/.ssh",
-          "aws ssm get-parameter --name /ec2/keypair/K8s-EC2-ssh-key --with-decryption --query Parameter.Value --output text > ~/.ssh/id_rsa",
+          "/usr/local/bin/aws ssm get-parameter --name /ec2/keypair/K8s-EC2-ssh-key --with-decryption --query Parameter.Value --output text > ~/.ssh/id_rsa",
           "chmod 600 ~/.ssh/id_rsa",
           "# Copy k3s config",
           "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_rsa ubuntu@${aws_instance.ec2-k3s_server.private_ip}:/etc/rancher/k3s/k3s.yaml /tmp/k3s_kubeconfig",
@@ -213,6 +218,7 @@ resource "null_resource" "install_helm_jenkins" {
     EOF
   }
 }
+
 
 
 
