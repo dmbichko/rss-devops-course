@@ -8,6 +8,7 @@ output "bastion_public_ip" {
   value       = aws_instance.ec2-k3s-worker.private_ip
   description = "K3S Agent IP Address"
 }*/
+/*!!!
 output "EC2_k3s-agents" {
   value = [
     for instance in aws_instance.ec2-k3s-worker : {
@@ -15,7 +16,7 @@ output "EC2_k3s-agents" {
       private_ip  = instance.private_ip
     }
   ]
-}
+}*/
 
 
 output "EC2_k3s-server" {
