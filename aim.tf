@@ -32,7 +32,7 @@ resource "aws_iam_role" "GithubActionsRole" {
 resource "aws_iam_policy" "ssm_policy" {
   name        = "SSMSessionManagerPolicy"
   path        = "/"
-  description = "IAM policy for Systems Manager Session Manager"
+  description = "IAM policy for Systems Manager Session Manager and Run Command"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -52,7 +52,9 @@ resource "aws_iam_policy" "ssm_policy" {
         Resource = [
           "arn:aws:ec2:*:${var.aws_account_id}:instance/*",
           "arn:aws:ssm:*:${var.aws_account_id}:document/AWS-StartInteractiveCommand",
-          "arn:aws:ssm:*::document/AWS-StartInteractiveCommand"
+          "arn:aws:ssm:*::document/AWS-StartInteractiveCommand",
+          "arn:aws:ssm:*:${var.aws_account_id}:document/AWS-RunShellScript",
+          "arn:aws:ssm:*::document/AWS-RunShellScript"
         ]
       },
       {
@@ -66,6 +68,7 @@ resource "aws_iam_policy" "ssm_policy" {
     ]
   })
 }
+
 
 
 resource "aws_iam_role_policy" "pass_role_policy" {
