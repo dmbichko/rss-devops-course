@@ -98,7 +98,7 @@ resource "aws_iam_role" "bastion_role" {
       }
     ]
   })
-    tags = merge(
+  tags = merge(
     local.common_tags,
     tomap({ "Name" = "${local.prefix}-EC2SSMRole" })
   )
