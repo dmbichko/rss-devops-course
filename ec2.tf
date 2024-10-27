@@ -190,7 +190,10 @@ resource "null_resource" "install_helm_jenkins" {
           "# Install kubectl",
           "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl",
           "# Verify installation", 
-          "kubectl version --client",         
+          "kubectl version --client", 
+          "mkdir -p ~/.ssh",
+          "aws ssm get-parameter --name /ec2/keypair/K8s-EC2-ssh-key --with-decryption --query Parameter.Value --output text > ~/.ssh/id_rsa",
+          "chmod 600 ~/.ssh/id_rsa",        
           "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${aws_instance.ec2-k3s_server.private_ip}:/etc/rancher/k3s/k3s.yaml /tmp/k3s_kubeconfig",
           "sed -i \"s/127.0.0.1/${aws_instance.ec2-k3s_server.private_ip}/g\" /tmp/k3s_kubeconfig",
           "export KUBECONFIG=/tmp/k3s_kubeconfig" 
