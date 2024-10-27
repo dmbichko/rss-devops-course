@@ -212,19 +212,21 @@ resource "null_resource" "install_helm_jenkins" {
           "sudo /usr/local/bin/aws ssm get-parameter --name /ec2/keypair/K8s-EC2-ssh-key --with-decryption --query Parameter.Value --output text | sudo tee /home/ubuntu/.ssh/id_rsa > /dev/null",
           "sudo chmod 600 /home/ubuntu/.ssh/id_rsa",
           "sudo chown ubuntu:ubuntu /home/ubuntu/.ssh/id_rsa",
+          "sudo /home/system.administrator/.kube/",
           "# Debug: Print SSH key info",
           "ls -l /home/ubuntu/.ssh/id_rsa",
           "# Copy k3s config",
           "sudo -u ubuntu ssh-keyscan -H ${aws_instance.ec2-k3s_server.private_ip} >> /home/ubuntu/.ssh/known_hosts",
-          "sudo -u ubuntu scp -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${aws_instance.ec2-k3s_server.private_ip}:/etc/rancher/k3s/k3s.yaml /tmp/k3s_kubeconfig",
+          "sudo -u ubuntu scp -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${aws_instance.ec2-k3s_server.private_ip}:/etc/rancher/k3s/k3s.yaml /home/system.administrator/.kube/config",
           "if [ $? -eq 0 ]; then",
-          "  sudo sed -i \"s/127.0.0.1/${aws_instance.ec2-k3s_server.private_ip}/g\" /tmp/k3s_kubeconfig",
+          "  sudo sed -i \"s/127.0.0.1/${aws_instance.ec2-k3s_server.private_ip}/g\" /home/system.administrator/.kube/config",
           "  echo \"K3s config successfully copied and modified\"",
           "else",
           "  echo \"Failed to copy K3s config\"",
           "  echo \"Debugging information:\"",
           "  sudo cat /home/ubuntu/.ssh/id_rsa | sed 's/.*/./'",
-          "fi"
+          "fi",
+          "chown system.administrator:system.administrator /home/system.administrator/.kube/config"
         ]
       }' \
       --output text
