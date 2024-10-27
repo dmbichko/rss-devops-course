@@ -174,9 +174,7 @@ resource "aws_instance" "ec2-nginx-proxy" {
 
 resource "null_resource" "install_helm_jenkins" {
   depends_on = [aws_instance.ec2-k8s-bastion, aws_instance.ec2-k3s_server]
-  triggers = {
-    always_run = "${timestamp()}" # This will cause it to run on every apply
-  }
+
   provisioner "local-exec" {
     command = <<EOF
     aws ssm send-command \
@@ -184,21 +182,31 @@ resource "null_resource" "install_helm_jenkins" {
       --document-name "AWS-RunShellScript" \
       --parameters '{
         "commands": [
+          "# Install AWS CLI",
+          "curl \"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\" -o \"awscliv2.zip\"",
+          "unzip awscliv2.zip",
+          "sudo ./aws/install",
+          "# Install Helm",
           "curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash",
           "helm repo add jenkins https://charts.jenkins.io",
           "helm repo update",
-          "# Download kubectl",
-          "curl -LO \"https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl\"",
           "# Install kubectl",
+          "curl -LO \"https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl\"",
           "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl",
-          "# Verify installation", 
-          "kubectl version --client", 
+          "kubectl version --client",
+          "# Setup SSH key",
           "mkdir -p ~/.ssh",
           "aws ssm get-parameter --name /ec2/keypair/K8s-EC2-ssh-key --with-decryption --query Parameter.Value --output text > ~/.ssh/id_rsa",
-          "chmod 600 ~/.ssh/id_rsa",        
-          "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${aws_instance.ec2-k3s_server.private_ip}:/etc/rancher/k3s/k3s.yaml /tmp/k3s_kubeconfig",
-          "sed -i \"s/127.0.0.1/${aws_instance.ec2-k3s_server.private_ip}/g\" /tmp/k3s_kubeconfig",
-          "export KUBECONFIG=/tmp/k3s_kubeconfig" 
+          "chmod 600 ~/.ssh/id_rsa",
+          "# Copy k3s config",
+          "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_rsa ubuntu@${aws_instance.ec2-k3s_server.private_ip}:/etc/rancher/k3s/k3s.yaml /tmp/k3s_kubeconfig",
+          "if [ $? -eq 0 ]; then",
+          "  sed -i \"s/127.0.0.1/${aws_instance.ec2-k3s_server.private_ip}/g\" /tmp/k3s_kubeconfig",
+          "  export KUBECONFIG=/tmp/k3s_kubeconfig",
+          "  echo \"K3s config successfully copied and modified\"",
+          "else",
+          "  echo \"Failed to copy K3s config\"",
+          "fi"
         ]
       }' \
       --output text
