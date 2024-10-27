@@ -174,7 +174,9 @@ resource "aws_instance" "ec2-nginx-proxy" {
 
 resource "null_resource" "install_helm_jenkins" {
   depends_on = [aws_instance.ec2-k8s-bastion, aws_instance.ec2-k3s_server]
-
+  triggers = {
+    always_run = "${timestamp()}" # This will cause it to run on every apply
+  }
   provisioner "local-exec" {
     command = <<EOF
     aws ssm send-command \
