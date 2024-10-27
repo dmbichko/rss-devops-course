@@ -100,6 +100,23 @@ resource "aws_iam_role" "bastion_role" {
     tomap({ "Name" = "${local.prefix}-EC2SSMRole" })
   )
 }
+resource "aws_iam_role_policy" "ssm_parameter_access" {
+  name = "ssm_parameter_access"
+  role = aws_iam_role.bastion_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter"
+        ]
+        Resource = "arn:aws:ssm:*:*:parameter/ec2/keypair/K8s-EC2-ssh-key"
+      }
+    ]
+  })
+}
 
 resource "aws_iam_role_policy_attachment" "bastion_ssm_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
