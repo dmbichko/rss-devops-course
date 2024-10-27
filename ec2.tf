@@ -212,7 +212,7 @@ resource "null_resource" "install_helm_jenkins" {
           "sudo /usr/local/bin/aws ssm get-parameter --name /ec2/keypair/K8s-EC2-ssh-key --with-decryption --query Parameter.Value --output text | sudo tee /home/ubuntu/.ssh/id_rsa > /dev/null",
           "sudo chmod 600 /home/ubuntu/.ssh/id_rsa",
           "sudo chown ubuntu:ubuntu /home/ubuntu/.ssh/id_rsa",
-          "sudo mkdir /home/system.administrator/.kube/",
+          "sudo mkdir /home/ubuntu/.kube/",
           "# Debug: Print SSH key info",
           "ls -l /home/ubuntu/.ssh/id_rsa",
           "# Copy k3s config",
@@ -226,7 +226,10 @@ resource "null_resource" "install_helm_jenkins" {
           "  echo \"Debugging information:\"",
           "  sudo cat /home/ubuntu/.ssh/id_rsa | sed 's/.*/./'",
           "fi",
-          "sudo chown system.administrator:system.administrator /home/system.administrator/.kube/config"
+          "sudo chown ubuntu:ubuntu /home/system.administrator/.kube/config",
+          "# Test kubectl",
+          "kubectl get nodes",
+          "kubectl get pods"
         ]
       }' \
       --output text
