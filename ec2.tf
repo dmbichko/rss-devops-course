@@ -107,6 +107,8 @@ resource "aws_instance" "ec2-k3s_server" {
   key_name  = aws_key_pair.EC2-instance_key.key_name
   subnet_id = aws_subnet.private_subnets[0].id
 
+  iam_instance_profile = aws_iam_instance_profile.k3s_server_profile.name
+
   #install k3s server
   vpc_security_group_ids = [
     aws_security_group.allow_all_privata_sub.id
@@ -119,6 +121,19 @@ resource "aws_instance" "ec2-k3s_server" {
               chmod 644 /etc/rancher/k3s/k3s.yaml
               cp /etc/rancher/k3s/k3s.yaml /home/system.administrator/.kube/conf
               chown system.administrator:system.administrator /home/system.administrator/.kube/conf
+              cp /home/system.administrator/.kube/conf /tmp/k3s_kubeconfig
+
+              # Get the instance's private IP using instance metadata
+              PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+   
+              # Use the retrieved private IP for the replacement
+              sed -i "s/127.0.0.1/$PRIVATE_IP/g" /tmp/k3s_kubeconfig
+              
+              # Upload to S3
+              aws s3 cp /tmp/k3s_kubeconfig s3://${aws_s3_bucket.k3s_config.id}/k3s.yaml
+              
+              # Cleanup
+              rm /tmp/k3s_kubeconfig       
               EOF
   depends_on = [aws_instance.nat]
   tags = merge(

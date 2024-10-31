@@ -1,3 +1,4 @@
+
 resource "aws_iam_role" "GithubActionsRole" {
 
   name = var.terraform_github_actions_role_name
@@ -172,4 +173,38 @@ resource "aws_iam_role_policy_attachment" "sqs_full_access" {
 resource "aws_iam_role_policy_attachment" "eventbridge_full_access" {
   role       = aws_iam_role.GithubActionsRole.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEventBridgeFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_kms_policy" {
+  role       = aws_iam_role.GithubActionsRole.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSKeyManagementServicePowerUser"
+}
+
+# IAM role for k3s server
+resource "aws_iam_role" "k3s_server_role" {
+  name = "${local.prefix}-k3s-server-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = merge(
+    local.common_tags,
+    tomap({ "Name" = "${local.prefix}-k3s-server-role" })
+  )
+}
+
+# IAM instance profile for k3s server
+resource "aws_iam_instance_profile" "k3s_server_profile" {
+  name = "${local.prefix}-k3s-server-profile"
+  role = aws_iam_role.k3s_server_role.name
 }

@@ -120,7 +120,7 @@ jobs:
                 aws-region: ${{ env.AWS_REGION }}
       
             - name: Terraform Apply
-              run: terraform apply -auto-approve -var="aws_account_id=${{ env.AWS_ACCOUNT_ID }}" -var="bastion-ssh-key=${{ env.BASTION_SSH_KEY }}" -var="ec2-ssh-key=${{ env.EC2_SSH_KEY }}" -var="k3s_token=${{env.K3S_TOKEN}}"
+              run: terraform apply -lock=false -var="aws_account_id=${{ env.AWS_ACCOUNT_ID }}" -var="bastion-ssh-key=${{ env.BASTION_SSH_KEY }}" -var="ec2-ssh-key=${{ env.EC2_SSH_KEY }}" -var="k3s_token=${{env.K3S_TOKEN}}"
 
 
                   
