@@ -117,6 +117,15 @@ resource "aws_instance" "ec2-k3s_server" {
 
   user_data  = <<-EOF
               #!/bin/bash
+              
+              # Install AWS CLI 
+              sudo apt-get update
+              sudo apt-get install -y unzip curl
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              sudo ./aws/install
+
+              # Install k3s
               curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - --token ${var.k3s_token}
               chmod 644 /etc/rancher/k3s/k3s.yaml
               cp /etc/rancher/k3s/k3s.yaml /home/system.administrator/.kube/conf
