@@ -128,9 +128,7 @@ resource "aws_instance" "ec2-k3s_server" {
               # Install k3s
               curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - --token ${var.k3s_token}
               chmod 644 /etc/rancher/k3s/k3s.yaml
-              cp /etc/rancher/k3s/k3s.yaml /home/ubuntu/.kube/conf
-              chown ubuntu:ubuntu /home/ubuntu/.kube/conf
-              cp /home/ubuntu/.kube/conf /tmp/k3s_kubeconfig
+              cp /etc/rancher/k3s/k3s.yaml /tmp/k3s_kubeconfig
 
               # Get the instance's private IP using instance metadata
               PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
