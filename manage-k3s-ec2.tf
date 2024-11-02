@@ -5,7 +5,7 @@ resource "aws_instance" "management" {
   key_name             = aws_key_pair.EC2-instance_key.key_name
   iam_instance_profile = aws_iam_instance_profile.management_profile.name
 
-  vpc_security_group_ids = [aws_security_group.management.id]
+  vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
 
   user_data = <<-EOF
               #!/bin/bash
