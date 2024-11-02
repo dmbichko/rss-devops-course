@@ -64,7 +64,24 @@ resource "aws_instance" "management" {
               chmod 600 /home/ubuntu/.kube/config
               chown -R ubuntu:ubuntu /home/ubuntu/.kube
 
-              kubectl get pods
+              # Install git 
+              dnf install -y git
+
+              # Create a directory for your files
+              mkdir -p /opt/k3s-install-jenkins
+              cd /opt/k3s-install-jenkins
+
+              # Clone your repository
+              git clone https://github.com/dmbichko/rss-devops-course.git
+
+              # Navigate to the specific folder containing k3s files
+              cd rss-devops-course/jenkins
+
+              # Make your scripts executable
+              chmod +x install-jenkins.sh
+
+              # Execute your Jenkins installation script
+              ./install-jenkins.sh
               EOF
 
   tags = {

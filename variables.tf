@@ -18,6 +18,12 @@ variable "ec2-ssh-key" {
   type        = string
 }
 
+variable "jenkins_nodeport" {
+  type        = string
+  default     = "32000"
+  description = "Jenkins K3S node port"
+}
+
 variable "ec2-instance-type" {
   description = "EC2 instance type"
   #default     = "t2.micro"

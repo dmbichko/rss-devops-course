@@ -29,15 +29,6 @@ data "aws_ami" "amazon_linux_2" {
   }
 }
 
-data "template_file" "user_data" {
-  template = file("${path.module}/nginx_proxy_userdata.sh")
-
-  vars = {
-    jenkins_private_ip = aws_instance.ec2-k3s_server.private_ip
-    jenkins_nodeport   = "32000"
-  }
-}
-
 # Create a private key for aws instances
 resource "aws_key_pair" "EC2-instance_key" {
   key_name = "K8s-EC2-ssh-key"
@@ -140,7 +131,11 @@ resource "aws_instance" "ec2-k3s_server" {
               aws s3 cp /tmp/k3s_kubeconfig s3://${aws_s3_bucket.k3s_config.id}/k3s.yaml
               
               # Cleanup
-              rm /tmp/k3s_kubeconfig       
+              rm /tmp/k3s_kubeconfig 
+               
+              # Create the folder for jenkins data
+              mkdir -p /data/jenkins-volume/
+              chown -R 1000:1000 /data/jenkins-volume/                    
               EOF
   depends_on = [aws_instance.nat]
   tags = merge(
@@ -170,6 +165,9 @@ resource "aws_instance" "ec2-k3s-worker" {
               # Install K3s agent and register the worker node with the desired label
               #curl -sfL https://get.k3s.io | K3S_URL=https://${aws_instance.ec2-k3s_server.private_ip}:6443 K3S_TOKEN=${var.k3s_token} sh -s - agent --kubelet-arg="node-labels=node-role.kubernetes.io/worker=worker"
               curl -sfL https://get.k3s.io | K3S_URL=https://${aws_instance.ec2-k3s_server.private_ip}:6443 K3S_TOKEN=${var.k3s_token} sh -s - agent
+              # Create the folder for jenkins data
+              mkdir -p /data/jenkins-volume/
+              chown -R 1000:1000 /data/jenkins-volume/ 
               EOF
 
   tags = merge(
@@ -178,24 +176,6 @@ resource "aws_instance" "ec2-k3s-worker" {
   )
   depends_on = [aws_instance.ec2-k3s_server]
 }
-
-resource "aws_instance" "ec2-nginx-proxy" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = var.ec2-instance-type
-  key_name      = aws_key_pair.EC2-instance_key.key_name
-  subnet_id     = aws_subnet.public_subnets[0].id
-  ####change rules to have access to private network K3s
-  vpc_security_group_ids = [
-    aws_security_group.public_instances.id
-  ]
-  user_data = data.template_file.user_data.rendered
-  tags = merge(
-    local.common_tags,
-    tomap({ "Name" = "${local.prefix}-ec2-nginx-proxy" })
-  )
-  depends_on = [aws_instance.ec2-k3s_server]
-}
-
 
 //Deleted these intances because of TAKS3
 /*resource "aws_instance" "ec2-k8s-public" {
