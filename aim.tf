@@ -133,7 +133,7 @@ resource "aws_iam_instance_profile" "management_profile" {
   role = aws_iam_role.management_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "s3_full_access" {
+resource "aws_iam_role_policy_attachment" "management_s3_full_access" {
   role       = aws_iam_role.management_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
