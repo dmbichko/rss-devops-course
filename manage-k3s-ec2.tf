@@ -1,7 +1,7 @@
 resource "aws_instance" "management" {
   ami                  = data.aws_ami.ubuntu.id
   instance_type        = var.ec2-instance-type
-  subnet_id            = var.public_subnets[0].id
+  subnet_id            = aws_subnet.public_subnets[0].id
   key_name             = aws_key_pair.EC2-instance_key.key_name
   iam_instance_profile = aws_iam_instance_profile.management_profile.name
 
