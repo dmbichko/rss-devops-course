@@ -82,7 +82,7 @@ resource "aws_iam_role_policy" "pass_role_policy" {
   })
 }
 resource "aws_iam_role" "management_role" {
-  name = "bastion_ssm_role"
+  name = "management_ssm_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
