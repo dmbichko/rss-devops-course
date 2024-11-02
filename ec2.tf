@@ -84,10 +84,10 @@ resource "aws_instance" "nat" {
 }
 
 resource "aws_instance" "ec2-k8s-bastion" {
-  ami                  = data.aws_ami.ubuntu.id
-  instance_type        = var.ec2-instance-type
-  key_name             = aws_key_pair.bastion_key.key_name
-  iam_instance_profile = aws_iam_instance_profile.bastion_profile.name
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.ec2-instance-type
+  key_name      = aws_key_pair.bastion_key.key_name
+  #  iam_instance_profile = aws_iam_instance_profile.bastion_profile.name
 
   subnet_id = aws_subnet.public_subnets[0].id
 

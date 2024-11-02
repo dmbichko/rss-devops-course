@@ -75,5 +75,5 @@ resource "aws_instance" "management" {
 
 # Output the instance ID for use in the Jenkins deployment pipeline
 output "management_instance_id" {
-  value = aws_instance.public_ip
+  value = aws_instance.management.public_ip
 }
