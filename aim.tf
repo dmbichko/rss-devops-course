@@ -81,7 +81,7 @@ resource "aws_iam_role_policy" "pass_role_policy" {
     ]
   })
 }
-resource "aws_iam_role" "bastion_role" {
+resource "aws_iam_role" "management_role" {
   name = "bastion_ssm_role"
 
   assume_role_policy = jsonencode({
@@ -104,7 +104,7 @@ resource "aws_iam_role" "bastion_role" {
 
 resource "aws_iam_role_policy" "ssm_parameter_access" {
   name = "ssm_parameter_access"
-  role = aws_iam_role.bastion_role.id
+  role = aws_iam_role.management_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -114,20 +114,28 @@ resource "aws_iam_role_policy" "ssm_parameter_access" {
         Action = [
           "ssm:GetParameter"
         ]
-        Resource = "arn:aws:ssm:*:*:parameter/ec2/keypair/K8s-EC2-ssh-key"
+        Resource = [
+          "arn:aws:ssm:*:*:parameter/ec2/keypair/K8s-EC2-ssh-key",
+          "arn:aws:ssm:*:*:parameter/ec2/keypair/K8s-Bastion-ssh-key"
+        ]
       }
     ]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "bastion_ssm_policy" {
+resource "aws_iam_role_policy_attachment" "management_ssm_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  role       = aws_iam_role.bastion_role.name
+  role       = aws_iam_role.management_role.name
 }
 
-resource "aws_iam_instance_profile" "bastion_profile" {
-  name = "bastion_ssm_profile"
-  role = aws_iam_role.bastion_role.name
+resource "aws_iam_instance_profile" "management_profile" {
+  name = "management_ssm_policy"
+  role = aws_iam_role.management_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "s3_full_access" {
+  role       = aws_iam_role.management_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
 resource "aws_iam_role_policy_attachment" "ssm_policy_attachment" {
