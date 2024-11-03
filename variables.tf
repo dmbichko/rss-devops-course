@@ -37,6 +37,12 @@ variable "ec2-instance-type-k3s" {
   type        = string
 }
 
+variable "ec2-instance-type-k3s-server" {
+  description = "EC2 instance type"
+  default     = "t3.medium"
+  type        = string
+}
+
 variable "your_ip" {
   type        = string
   description = "Your IP address"
