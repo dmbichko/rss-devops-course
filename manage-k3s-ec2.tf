@@ -81,7 +81,7 @@ resource "aws_instance" "management" {
 
               # Make your scripts executable
               chmod +x install-jenkins.sh
-
+              sleep 30
               # Execute your Jenkins installation script
               ./install-jenkins.sh
               EOF
