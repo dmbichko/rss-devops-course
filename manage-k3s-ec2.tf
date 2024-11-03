@@ -128,7 +128,4 @@ resource "aws_instance" "management" {
   depends_on = [aws_instance.ec2-k3s_server]
 }
 
-# Output the instance ID for use in the Jenkins deployment pipeline
-output "management_instance_id" {
-  value = aws_instance.management.public_ip
-}
+
