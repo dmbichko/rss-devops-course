@@ -24,10 +24,10 @@ kubectl create namespace jenkins || echo "Namespace jenkins already exists"
 # This sets up the necessary RBAC permissions for Jenkins
 echo "Applying service account configuration..."
 kubectl apply -f jenkins-sa.yaml
-# Apply service account configuration
-# This sets up the necessary RBAC permissions for Jenkins
-echo "Applying service account configuration..."
-kubectl apply -f jenkins-sa.yaml
+# Apply persistent volume configuration
+# This sets up the storage that Jenkins will use
+echo "Applying persistent volume configuration..."
+kubectl apply -f jenkins-pv.yaml
 # Add the official Jenkins Helm repository
 echo "Adding Jenkins Helm repository..."
 helm repo add jenkinsci https://charts.jenkins.io
@@ -60,10 +60,6 @@ chart=jenkinsci/jenkins
 # -f specifies the values file
 echo "Installing Jenkins using Helm..."
 helm install jenkins -n jenkins -f jenkins-values.yaml $chart
-
-# Wait for Jenkins pods to be ready
-echo "Waiting for Jenkins pods to become ready..."
-kubectl wait --for=condition=Ready pods -l app.kubernetes.io/name=jenkins -n jenkins --timeout=300s || handle_error "Jenkins pods failed to become ready"
 
 # Display all resources in Jenkins namespace
 echo "Displaying all resources in Jenkins namespace..."
