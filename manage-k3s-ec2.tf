@@ -9,6 +9,16 @@ resource "aws_instance" "management" {
 
   user_data = <<-EOF
               #!/bin/bash
+              # Exit on any error
+              set -e
+
+              # Function for error handling
+              handle_error() {
+                echo "Error occurred on line $1"
+                exit 1
+              }
+              trap 'handle_error $LINENO' ERR
+
               # Install required packages
               sudo apt-get update
               sudo apt-get install -y unzip curl netcat-openbsd
@@ -17,10 +27,12 @@ resource "aws_instance" "management" {
               curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
               unzip awscliv2.zip
               sudo ./aws/install
+              rm -rf aws awscliv2.zip  # Cleanup
 
               # Install kubectl
               curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
               sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+              rm kubectl  # Cleanup
 
               # Install Helm
               curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
@@ -62,15 +74,39 @@ resource "aws_instance" "management" {
               sleep 90  # Initial wait for k3s server setup
               # Get kubeconfig from S3
               mkdir -p /home/ubuntu/.kube
-              aws s3 cp s3://${aws_s3_bucket.k3s_config.id}/k3s.yaml /home/ubuntu/.kube/config
+              max_attempts=5
+              attempt=1
+              while [ $attempt -le $max_attempts ]; do
+                if aws s3 cp s3://${aws_s3_bucket.k3s_config.id}/k3s.yaml /home/ubuntu/.kube/config; then
+                  echo "Successfully downloaded kubeconfig"
+                  break
+                fi
+                echo "Attempt $attempt failed, waiting before retry..."
+                sleep 30
+                attempt=$((attempt + 1))
+              done
+
+              if [ $attempt -gt $max_attempts ]; then
+                echo "Failed to download kubeconfig after $max_attempts attempts"
+                exit 1
+              fi
+
               chmod 600 /home/ubuntu/.kube/config
               chown -R ubuntu:ubuntu /home/ubuntu/.kube
 
-              # Install git 
-              dnf install -y git
-
               # Create a directory for your files
               mkdir -p /opt/k3s-install-jenkins
+              chown -R ubuntu:ubuntu /opt/k3s-install-jenkins
+
+              # Switch to ubuntu user and execute remaining commands
+              su - ubuntu << 'USEREOF'
+              export KUBECONFIG=/home/ubuntu/.kube/config
+
+              # Verify kubectl access
+              if ! kubectl get nodes; then
+                echo "Failed to access kubernetes cluster"
+                exit 1
+              fi
               cd /opt/k3s-install-jenkins
 
               # Clone your repository
@@ -81,9 +117,9 @@ resource "aws_instance" "management" {
 
               # Make your scripts executable
               chmod +x install-jenkins.sh
-              sleep 30
               # Execute your Jenkins installation script
               ./install-jenkins.sh
+              USEREOF
               EOF
 
   tags = {
