@@ -57,30 +57,14 @@ resource "aws_instance" "management" {
 
               chmod +x /home/ubuntu/setup-proxy.sh
               chown ubuntu:ubuntu /home/ubuntu/setup-proxy.sh
-
-              # Get kubeconfig from S3              
+              
               echo "Waiting 2 minutes for k3s server to initialize..."
-                sleep 120  # Initial wait for k3s server setup
-
-                for i in {1..10}; do
-                  echo "Attempt $i to download k3s config..."
-                  
-                  # Create directory if it doesn't exist
-                  mkdir -p /home/ubuntu/.kube
-                  
-                  # Try to download config
-                  if aws s3 cp s3://${aws_s3_bucket.k3s_config.id}/k3s.yaml /home/ubuntu/.kube/config; then
-                    echo "Config downloaded successfully"
-                    
-                    # Set permissions
-                    chmod 600 /home/ubuntu/.kube/config
-                    chown -R ubuntu:ubuntu /home/ubuntu/.kube
-                    
-                    return 0
-                  fi
-                  
-                  echo "Download failed, waiting 30 seconds before retry..."
-                  sleep 30
+              sleep 90  # Initial wait for k3s server setup
+              # Get kubeconfig from S3
+              mkdir -p /home/ubuntu/.kube
+              aws s3 cp s3://${aws_s3_bucket.k3s_config.id}/k3s.yaml /home/ubuntu/.kube/config
+              chmod 600 /home/ubuntu/.kube/config
+              chown -R ubuntu:ubuntu /home/ubuntu/.kube
 
               # Install git 
               dnf install -y git
