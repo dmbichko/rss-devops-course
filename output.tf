@@ -1,6 +1,6 @@
 output "Nginx-proxy_public_ip" {
   description = "Nginx-proxy public ip"
-  value       = aws_instance.nginx-proxy.public_ip
+  value       = aws_instance.ec2-nginx-proxy.public_ip
 }
 
 # Output the public ip of the manage instance
