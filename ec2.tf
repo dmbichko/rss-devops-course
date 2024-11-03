@@ -137,9 +137,6 @@ resource "aws_instance" "ec2-k3s_server" {
               # Upload to S3
               aws s3 cp /tmp/k3s_kubeconfig s3://${aws_s3_bucket.k3s_config.id}/k3s.yaml
               
-              # Create ready marker
-              echo $TIMESTAMP > /tmp/k3s_ready
-              aws s3 cp /tmp/k3s_ready s3://${aws_s3_bucket.k3s_config.id}/k3s_ready
               # Cleanup
               rm /tmp/k3s_kubeconfig 
                
