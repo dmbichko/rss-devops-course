@@ -57,6 +57,22 @@ resource "aws_instance" "management" {
 
               chmod +x /home/ubuntu/setup-proxy.sh
               chown ubuntu:ubuntu /home/ubuntu/setup-proxy.sh
+              
+              # Function to wait for k3s config
+              wait_for_k3s_config() {
+                echo "Waiting for k3s config to be available..."
+                while true; do
+                  if aws s3 ls s3://${aws_s3_bucket.k3s_config.id}/k3s_ready &>/dev/null; then
+                    echo "K3s config is ready"
+                    break
+                  fi
+                  echo "Still waiting for k3s config..."
+                  sleep 10
+                done
+              }
+
+              # Wait for config to be ready
+              wait_for_k3s_config
 
               # Get kubeconfig from S3
               mkdir -p /home/ubuntu/.kube
@@ -85,7 +101,7 @@ resource "aws_instance" "management" {
               EOF
 
   tags = {
-    Name = "${var.prefix}-management"
+    Name = "${var.prefix}-management-k3s"
   }
   depends_on = [aws_instance.ec2-k3s_server]
 }

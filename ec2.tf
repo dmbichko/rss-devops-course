@@ -118,6 +118,13 @@ resource "aws_instance" "ec2-k3s_server" {
 
               # Install k3s
               curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - --token ${var.k3s_token}
+             
+              # Wait for k3s to be ready
+              until kubectl get nodes; do
+                echo "Waiting for k3s to be ready..."
+                sleep 5
+              done
+
               chmod 644 /etc/rancher/k3s/k3s.yaml
               cp /etc/rancher/k3s/k3s.yaml /tmp/k3s_kubeconfig
 
@@ -130,6 +137,9 @@ resource "aws_instance" "ec2-k3s_server" {
               # Upload to S3
               aws s3 cp /tmp/k3s_kubeconfig s3://${aws_s3_bucket.k3s_config.id}/k3s.yaml
               
+              # Create ready marker
+              echo $TIMESTAMP > /tmp/k3s_ready
+              aws s3 cp /tmp/k3s_ready s3://${aws_s3_bucket.k3s_config.id}/k3s_ready
               # Cleanup
               rm /tmp/k3s_kubeconfig 
                
@@ -172,7 +182,7 @@ resource "aws_instance" "ec2-k3s-worker" {
 
   tags = merge(
     local.common_tags,
-    tomap({ "Name" = "${local.prefix}-ec2-k3s-agent" })
+    tomap({ "Name" = "${local.prefix}-ec2-k3s-agent-${count.index + 1}" })
   )
   depends_on = [aws_instance.ec2-k3s_server]
 }
