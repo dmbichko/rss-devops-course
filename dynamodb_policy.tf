@@ -20,4 +20,7 @@ resource "aws_iam_policy" "dynamodb_policy" {
       }
     ]
   })
+  lifecycle {
+    prevent_destroy = true
+  }
 }
