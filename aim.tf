@@ -1,3 +1,4 @@
+
 resource "aws_iam_role" "GithubActionsRole" {
 
   name = var.terraform_github_actions_role_name
@@ -27,6 +28,119 @@ resource "aws_iam_role" "GithubActionsRole" {
   lifecycle {
     prevent_destroy = true
   }
+}
+
+resource "aws_iam_policy" "ssm_policy" {
+  name        = "SSMSessionManagerPolicy"
+  path        = "/"
+  description = "IAM policy for Systems Manager Session Manager and Run Command"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:StartSession",
+          "ssm:TerminateSession",
+          "ssm:ResumeSession",
+          "ssm:DescribeSessions",
+          "ssm:SendCommand",
+          "ssm:GetCommandInvocation",
+          "ssm:ListCommands",
+          "ssm:GetConnectionStatus"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:DescribeInstanceInformation",
+          "ec2:DescribeInstances"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+
+
+resource "aws_iam_role_policy" "pass_role_policy" {
+  name = "PassRolePolicy"
+  role = aws_iam_role.GithubActionsRole.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "iam:PassRole"
+        Resource = "arn:aws:iam::${var.aws_account_id}:role/*"
+      }
+    ]
+  })
+}
+resource "aws_iam_role" "management_role" {
+  name = "management_ssm_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+  tags = merge(
+    local.common_tags,
+    tomap({ "Name" = "${local.prefix}-EC2SSMRole" })
+  )
+}
+
+resource "aws_iam_role_policy" "ssm_parameter_access" {
+  name = "ssm_parameter_access"
+  role = aws_iam_role.management_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter"
+        ]
+        Resource = [
+          "arn:aws:ssm:*:*:parameter/ec2/keypair/K8s-EC2-ssh-key",
+          "arn:aws:ssm:*:*:parameter/ec2/keypair/K8s-Bastion-ssh-key"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "management_ssm_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.management_role.name
+}
+
+resource "aws_iam_instance_profile" "management_profile" {
+  name = "management_ssm_policy"
+  role = aws_iam_role.management_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "management_s3_full_access" {
+  role       = aws_iam_role.management_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_policy_attachment" {
+  role       = aws_iam_role.GithubActionsRole.name
+  policy_arn = aws_iam_policy.ssm_policy.arn
 }
 
 resource "aws_iam_role_policy_attachment" "dynamodb_policy_attachment" {
@@ -67,4 +181,38 @@ resource "aws_iam_role_policy_attachment" "sqs_full_access" {
 resource "aws_iam_role_policy_attachment" "eventbridge_full_access" {
   role       = aws_iam_role.GithubActionsRole.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEventBridgeFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_kms_policy" {
+  role       = aws_iam_role.GithubActionsRole.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSKeyManagementServicePowerUser"
+}
+
+# IAM role for k3s server
+resource "aws_iam_role" "k3s_server_role" {
+  name = "${local.prefix}-k3s-server-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = merge(
+    local.common_tags,
+    tomap({ "Name" = "${local.prefix}-k3s-server-role" })
+  )
+}
+
+# IAM instance profile for k3s server
+resource "aws_iam_instance_profile" "k3s_server_profile" {
+  name = "${local.prefix}-k3s-server-profile"
+  role = aws_iam_role.k3s_server_role.name
 }
