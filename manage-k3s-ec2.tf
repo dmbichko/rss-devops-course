@@ -107,7 +107,7 @@ resource "aws_instance" "management" {
                 echo "Failed to access kubernetes cluster"
                 exit 1
               fi
-              cd /opt/k3s-install-jenkins
+              #cd /opt/k3s-install-jenkins
 
               # Clone your repository
               #git clone -b task4 https://github.com/dmbichko/rss-devops-course.git

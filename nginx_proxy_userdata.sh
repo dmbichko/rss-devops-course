@@ -8,19 +8,8 @@ apt-get upgrade -y
 apt-get install -y nginx
 
 # Create a reverse proxy configuration for Jenkins
-cat << EOF > /etc/nginx/sites-available/jenkins
+cat << EOF > /etc/nginx/sites-available/wordpress
 server {
-    listen 8080;
-    server_name _;
-
-    location / {
-        proxy_pass http://${jenkins_private_ip}:${jenkins_nodeport};
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
     listen 80;
     server_name _;
 
