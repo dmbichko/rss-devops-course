@@ -3,11 +3,11 @@ variable "region" {
   default = "us-east-1"
 }
 
-/*variable "ec2_public_key" {
-  description = "Name of the SSH key pair"
-  default     = "K8s-ec2-key"
+variable "k3s_token" {
+  description = "K3S token"
   type        = string
-}*/
+  sensitive   = true
+}
 
 variable "bastion-ssh-key" {
   description = "Public key for bastion host"
@@ -18,9 +18,35 @@ variable "ec2-ssh-key" {
   type        = string
 }
 
+variable "jenkins_nodeport" {
+  type        = string
+  default     = "32000"
+  description = "Jenkins K3S node port"
+}
+
+variable "wordpress_nodeport" {
+  type        = string
+  default     = "30080"
+  description = "Wordpress App K3S node port"
+}
+
+
 variable "ec2-instance-type" {
   description = "EC2 instance type"
-  default     = "t3.micro"
+  #default     = "t2.micro"
+  default = "t2.small"
+  type    = string
+}
+
+variable "ec2-instance-type-k3s" {
+  description = "EC2 instance type"
+  default     = "t3.small"
+  type        = string
+}
+
+variable "ec2-instance-type-k3s-server" {
+  description = "EC2 instance type"
+  default     = "t3.medium"
   type        = string
 }
 

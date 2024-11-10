@@ -86,3 +86,27 @@ resource "aws_security_group" "allow_all_privata_sub" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+resource "aws_security_group" "nat_sg" {
+  name        = "nat_sg"
+  description = "Security group for NAT instance"
+  vpc_id      = aws_vpc.vpc-k8s.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [aws_vpc.vpc-k8s.cidr_block]
+  }
+
+  tags = {
+    Name = "NAT Instance Security Group"
+  }
+}
