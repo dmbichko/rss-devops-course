@@ -98,6 +98,10 @@ resource "aws_instance" "management" {
               mkdir -p /opt/k3s-install-jenkins
               chown -R ubuntu:ubuntu /opt/k3s-install-jenkins
 
+              # Create a directory for wordpress app
+              mkdir -p /opt/k3s-install-wordpress
+              chown -R ubuntu:ubuntu /opt/k3s-install-wordpress
+              
               # Switch to ubuntu user and execute remaining commands
               su - ubuntu << 'USEREOF'
               export KUBECONFIG=/home/ubuntu/.kube/config
@@ -121,8 +125,7 @@ resource "aws_instance" "management" {
               #./install-jenkins.sh
 
               # Create a directory for wordpress app
-              mkdir -p /opt/k3s-install-wordpress
-              chown -R ubuntu:ubuntu /opt/k3s-install-wordpress
+              cd /opt/k3s-install-wordpress
               git clone https://github.com/dmbichko/rss-devops-course-wordpress.git
               cd rss-devops-course-wordpress/
               # install wordpress by helm
