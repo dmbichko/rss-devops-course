@@ -2,8 +2,8 @@ data "template_file" "user_data" {
   template = file("${path.module}/nginx_proxy_userdata.sh")
 
   vars = {
-    jenkins_private_ip = aws_instance.ec2-k3s_server.private_ip
-    jenkins_nodeport   = var.jenkins_nodeport
+    jenkins_private_ip   = aws_instance.ec2-k3s_server.private_ip
+    jenkins_nodeport     = var.jenkins_nodeport
     wordpress_private_ip = aws_instance.ec2-k3s_server.private_ip
     wordpress_nodeport   = var.wordpress_nodeport
   }
