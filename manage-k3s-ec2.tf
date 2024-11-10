@@ -110,15 +110,25 @@ resource "aws_instance" "management" {
               cd /opt/k3s-install-jenkins
 
               # Clone your repository
-              git clone -b task4 https://github.com/dmbichko/rss-devops-course.git
+              #git clone -b task4 https://github.com/dmbichko/rss-devops-course.git
 
               # Navigate to the specific folder containing k3s files
-              cd rss-devops-course/jenkins
+              #cd rss-devops-course/jenkins
 
               # Make your scripts executable
-              chmod +x install-jenkins.sh
+              #chmod +x install-jenkins.sh
               # Execute your Jenkins installation script
-              ./install-jenkins.sh
+              #./install-jenkins.sh
+
+              # Create a directory for wordpress app
+              mkdir -p /opt/k3s-install-wordpress
+              chown -R ubuntu:ubuntu /opt/k3s-install-wordpress
+              git clone https://github.com/dmbichko/rss-devops-course-wordpress.git
+              cd rss-devops-course-wordpress/
+              # install wordpress by helm
+              helm install wordpress ./wordpress-chart --namespace wordpress --create-namespace
+              kubectl get all -n wordpress
+
               USEREOF
               EOF
 

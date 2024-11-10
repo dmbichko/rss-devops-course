@@ -142,7 +142,9 @@ resource "aws_instance" "ec2-k3s_server" {
                
               # Create the folder for jenkins data
               mkdir -p /data/jenkins-volume/
-              chown -R 1000:1000 /data/jenkins-volume/                    
+              chown -R 1000:1000 /data/jenkins-volume/ 
+              mkdir -p /mnt/data/wordpress
+              chown -R 1000:1000 /mnt/data/wordpress                                
               EOF
   depends_on = [aws_instance.nat]
   tags = merge(
@@ -175,6 +177,8 @@ resource "aws_instance" "ec2-k3s-worker" {
               # Create the folder for jenkins data
               mkdir -p /data/jenkins-volume/
               chown -R 1000:1000 /data/jenkins-volume/ 
+              mkdir -p /mnt/data/wordpress
+              chown -R 1000:1000 /mnt/data/wordpress                 
               EOF
 
   tags = merge(

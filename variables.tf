@@ -24,6 +24,13 @@ variable "jenkins_nodeport" {
   description = "Jenkins K3S node port"
 }
 
+variable "wordpress_nodeport" {
+  type        = string
+  default     = "30080"
+  description = "Wordpress App K3S node port"
+}
+
+
 variable "ec2-instance-type" {
   description = "EC2 instance type"
   #default     = "t2.micro"
